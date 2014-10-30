@@ -22,7 +22,8 @@
 #define SHADERS_DIR "shaders/"
 
 static const int CIRCLE_RESOLUTION = 100;
-static const float BASE_RADIUS = 1;
+static const float BASE_RADIUS = 0.5;
+static const int SQUARE_SIZE = 7;
 
 Model::Model() :
 _vao(0), _vbo(0), _vertex_num(CIRCLE_RESOLUTION + 2)
@@ -50,6 +51,7 @@ void Model::init()
 	// Obtain uniform variable handles:
 	_fillColorUV  = glGetUniformLocation(program, "fillColor");
 	_squareSizeUV = glGetUniformLocation(program, "squareSize");
+	_radiusUV = glGetUniformLocation(program, "radius");
 
 	// Initialize vertices buffer and transfer it to OpenGL
 	{
@@ -62,8 +64,8 @@ void Model::init()
 		float angle_between_vertices = (2 * M_PI) / (CIRCLE_RESOLUTION);
 		for (int i = 0; i <= CIRCLE_RESOLUTION; ++i)
 		{
-			vertices[4 + 4*i] = cosf(angle_between_vertices * i) * BASE_RADIUS;
-			vertices[4 + 4*i + 1] = sinf(angle_between_vertices * i) * BASE_RADIUS;
+			vertices[4 + 4*i] = cosf(angle_between_vertices * i);
+			vertices[4 + 4*i + 1] = sinf(angle_between_vertices * i);
 			vertices[4 + 4*i + 2] = 0;
 			vertices[4 + 4*i + 3] = 1;
 		}
@@ -106,7 +108,8 @@ void Model::draw()
 	// Set uniform variable with RGB values:
 	float red = 0.3f; float green = 0.5f; float blue = 0.7f;
 	glUniform4f(_fillColorUV, red, green, blue, 1.0);
-	glUniform1i(_squareSizeUV, 10);
+	glUniform1i(_squareSizeUV, SQUARE_SIZE);
+	glUniform1f(_radiusUV, BASE_RADIUS);
 
 	// Draw using the state stored in the Vertex Array object:
 	glBindVertexArray(_vao);

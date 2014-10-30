@@ -26,3 +26,7 @@
 *.exe
 *.out
 *.app
+ex0
+
+# Eclipse shit
+.settings
