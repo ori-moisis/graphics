@@ -28,6 +28,8 @@ class Model {
 	// View port frame:
 	float _width, _height, _offsetX, _offsetY;
 
+	int _vertex_num;
+
 public:
 	Model();
 

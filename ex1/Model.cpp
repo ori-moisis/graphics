@@ -21,8 +21,10 @@
 
 #define SHADERS_DIR "shaders/"
 
+static const int CIRCLE_RESOLUTION = 32;
+
 Model::Model() :
-_vao(0), _vbo(0)
+_vao(0), _vbo(0), _vertex_num(CIRCLE_RESOLUTION + 2)
 {
 
 }
@@ -50,11 +52,19 @@ void Model::init()
 	// Initialize vertices buffer and transfer it to OpenGL
 	{
 		// For this example we create a single triangle:
-		const float vertices[] = {
-			0.75f, 0.75f, 0.0f, 1.0f,
-			0.75f, -0.75f, 0.0f, 1.0f,
-			-0.75f, -0.75f, 0.0f, 1.0f,
-		};
+		float* vertices = new float[this->_vertex_num * 4];
+		vertices[0] = 0;
+		vertices[1] = 0;
+		vertices[2] = 0;
+		vertices[3] = 0;
+		float angle_between_vertices = (2 * M_PI) / (CIRCLE_RESOLUTION);
+		for (int i = 0; i <= CIRCLE_RESOLUTION; ++i)
+		{
+			vertices[4 + 4*i] = cosf(angle_between_vertices * i);
+			vertices[4 + 4*i + 1] = sinf(angle_between_vertices * i);
+			vertices[4 + 4*i + 2] = 0;
+			vertices[4 + 4*i + 3] = 1;
+		}
 		
 		// Create and bind the object's Vertex Array Object:
 		glGenVertexArrays(1, &_vao);
@@ -63,7 +73,7 @@ void Model::init()
 		// Create and load vertex data into a Vertex Buffer Object:
 		glGenBuffers(1, &_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, this->_vertex_num * 4, vertices, GL_STATIC_DRAW);
 		
 		// Tells OpenGL that there is vertex data in this buffer object and what form that vertex data takes:
 
@@ -98,8 +108,7 @@ void Model::draw()
 	// Draw using the state stored in the Vertex Array object:
 	glBindVertexArray(_vao);
 	
-	size_t numberOfVertices = 3;
-	glDrawArrays(GL_TRIANGLES, 0, numberOfVertices);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, this->_vertex_num);
 	
 	// Unbind the Vertex Array object
 	glBindVertexArray(0);
