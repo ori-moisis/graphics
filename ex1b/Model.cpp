@@ -18,12 +18,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "glm/gtc/matrix_transform.hpp"
+#include <cstdlib>
 
 #define SHADERS_DIR "shaders/"
 
 static const int CIRCLE_RESOLUTION = 200;
-static const float BASE_RADIUS = 0.5;
-static const int SQUARE_SIZE = 7;
+static const float BASE_RADIUS = 0.1;
+static const int SQUARE_SIZE = 0;
+static const float STEP_SIZE = 0.02;
 
 Model::Model() :
 _vao(0), _vbo(0), _vertex_num(CIRCLE_RESOLUTION)
@@ -52,6 +54,7 @@ void Model::init()
 	_fillColorUV  = glGetUniformLocation(program, "fillColor");
 	_squareSizeUV = glGetUniformLocation(program, "squareSize");
 	_radiusUV = glGetUniformLocation(program, "radius");
+	_offsetUV = glGetUniformLocation(program, "offset");
 
 	// Initialize vertices buffer and transfer it to OpenGL
 	{
@@ -101,22 +104,51 @@ void Model::draw()
 	GLenum polygonMode = GL_FILL;   // Also try using GL_FILL and GL_POINT
 	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 
-	// Set uniform variable with RGB values:
-	float red = 0.3f; float green = 0.5f; float blue = 0.7f;
-	glUniform4f(_fillColorUV, red, green, blue, 1.0);
-	glUniform1i(_squareSizeUV, SQUARE_SIZE);
-	glUniform1f(_radiusUV, BASE_RADIUS);
+	if (_balls.empty())
+	{
+		// Initialize the first ball
+		this->add_ball(_width / 2, _height / 2);
+	}
 
-	// Draw using the state stored in the Vertex Array object:
-	glBindVertexArray(_vao);
-	
-	glDrawArrays(GL_TRIANGLE_FAN, 0, this->_vertex_num);
+	for (std::vector<Ball>::iterator ball = _balls.begin(); ball != _balls.end(); ++ball)
+	{
+		glUniform4f(_fillColorUV, ball->_red, ball->_green, ball->_blue, 1.0);
+		glUniform1i(_squareSizeUV, SQUARE_SIZE);
+		glUniform1f(_radiusUV, ball->_cur_radius);
+		glUniform2f(_offsetUV, ball->_x, ball->_y);
+
+		// Draw using the state stored in the Vertex Array object:
+		glBindVertexArray(_vao);
+
+		glDrawArrays(GL_TRIANGLE_FAN, 0, this->_vertex_num);
+
+		// Move the ball
+		ball->move(STEP_SIZE);
+	}
 	
 	// Unbind the Vertex Array object
 	glBindVertexArray(0);
 	
 	// Cleanup, not strictly necessary
 	glUseProgram(0);
+}
+
+static float get_random(float min, float max)
+{
+	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(max-min)));
+}
+
+void Model::add_ball(int x, int y)
+{
+	float new_x = (2*x / _width) - 1;
+	float new_y = ((_height - 2*y) / _height);
+	_balls.push_back(Ball(new_x,
+			              new_y,
+			              get_random(0, 2*M_PI),
+			              BASE_RADIUS,
+			              get_random(0.1,0.8),
+			              get_random(0.1,0.8),
+			              get_random(0.1,0.8)));
 }
 
 void Model::resize(int width, int height)
