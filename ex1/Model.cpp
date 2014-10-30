@@ -21,7 +21,8 @@
 
 #define SHADERS_DIR "shaders/"
 
-static const int CIRCLE_RESOLUTION = 32;
+static const int CIRCLE_RESOLUTION = 100;
+static const float BASE_RADIUS = 1;
 
 Model::Model() :
 _vao(0), _vbo(0), _vertex_num(CIRCLE_RESOLUTION + 2)
@@ -48,6 +49,7 @@ void Model::init()
 		
 	// Obtain uniform variable handles:
 	_fillColorUV  = glGetUniformLocation(program, "fillColor");
+	_squareSizeUV = glGetUniformLocation(program, "squareSize");
 
 	// Initialize vertices buffer and transfer it to OpenGL
 	{
@@ -60,8 +62,8 @@ void Model::init()
 		float angle_between_vertices = (2 * M_PI) / (CIRCLE_RESOLUTION);
 		for (int i = 0; i <= CIRCLE_RESOLUTION; ++i)
 		{
-			vertices[4 + 4*i] = cosf(angle_between_vertices * i);
-			vertices[4 + 4*i + 1] = sinf(angle_between_vertices * i);
+			vertices[4 + 4*i] = cosf(angle_between_vertices * i) * BASE_RADIUS;
+			vertices[4 + 4*i + 1] = sinf(angle_between_vertices * i) * BASE_RADIUS;
 			vertices[4 + 4*i + 2] = 0;
 			vertices[4 + 4*i + 3] = 1;
 		}
@@ -73,7 +75,7 @@ void Model::init()
 		// Create and load vertex data into a Vertex Buffer Object:
 		glGenBuffers(1, &_vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, this->_vertex_num * 4, vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, this->_vertex_num * 4 * sizeof(float), vertices, GL_STATIC_DRAW);
 		
 		// Tells OpenGL that there is vertex data in this buffer object and what form that vertex data takes:
 
@@ -98,12 +100,13 @@ void Model::draw()
 	GLuint program = programManager::sharedInstance().programWithID("default");
 	glUseProgram(program);
 
-	GLenum polygonMode = GL_LINE;   // Also try using GL_FILL and GL_POINT
+	GLenum polygonMode = GL_FILL;   // Also try using GL_FILL and GL_POINT
 	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
 
 	// Set uniform variable with RGB values:
 	float red = 0.3f; float green = 0.5f; float blue = 0.7f;
 	glUniform4f(_fillColorUV, red, green, blue, 1.0);
+	glUniform1i(_squareSizeUV, 10);
 
 	// Draw using the state stored in the Vertex Array object:
 	glBindVertexArray(_vao);
