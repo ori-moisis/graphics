@@ -30,21 +30,21 @@ class Model {
 	// View port frame:
 	float _width, _height, _offsetX, _offsetY;
 
+	// Number of vertices on the circle's edge
 	int _vertex_num;
 
 public:
 	Model();
 
-public:
 	virtual ~Model();
 
-public:
+	// Create a circle vertex array
+	void make_vertex_array(int num_vertices);
+
 	void init();
 	
-public:
 	void draw();
 	
-public:
 	void resize(int width, int height);
 	
 };
