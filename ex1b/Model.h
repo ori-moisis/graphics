@@ -43,6 +43,8 @@ public:
 	Model();
 	virtual ~Model();
 
+	void make_vertex_array(int num_vertices);
+
 	void init();
 	
 	void draw();

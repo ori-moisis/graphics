@@ -22,13 +22,14 @@
 
 #define SHADERS_DIR "shaders/"
 
-static const int CIRCLE_RESOLUTION = 200;
+static const int MIN_VERTICES = 50;
+static const int VERTEX_RATIO = 1000;
 static const float BASE_RADIUS = 0.1;
 static const int SQUARE_SIZE = 0;
 static const float STEP_SIZE = 0.02;
 
 Model::Model() :
-_vao(0), _vbo(0), _vertex_num(CIRCLE_RESOLUTION)
+_vao(0), _vbo(0), _vertex_num(0)
 {
 
 }
@@ -39,6 +40,22 @@ Model::~Model()
 		glDeleteVertexArrays(1, &_vao);
 	if (_vbo != 0)
 		glDeleteBuffers(1, &_vbo);
+}
+
+void Model::make_vertex_array(int num_vertices)
+{
+	this->_vertex_num = num_vertices;
+	float* vertices = new float[this->_vertex_num * 4];
+	float angle_between_vertices = (2 * M_PI) / (num_vertices);
+	for (int i = 0; i < num_vertices; ++i)
+	{
+		vertices[4*i] = cosf(angle_between_vertices * i);
+		vertices[4*i + 1] = sinf(angle_between_vertices * i);
+		vertices[4*i + 2] = 0;
+		vertices[4*i + 3] = 1;
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	glBufferData(GL_ARRAY_BUFFER, this->_vertex_num * 4 * sizeof(float), vertices, GL_STATIC_DRAW);
 }
 
 void Model::init()
@@ -58,26 +75,13 @@ void Model::init()
 
 	// Initialize vertices buffer and transfer it to OpenGL
 	{
-		// For this example we create a single triangle:
-		float* vertices = new float[this->_vertex_num * 4];
-		float angle_between_vertices = (2 * M_PI) / (CIRCLE_RESOLUTION);
-		for (int i = 0; i < CIRCLE_RESOLUTION; ++i)
-		{
-			vertices[4*i] = cosf(angle_between_vertices * i);
-			vertices[4*i + 1] = sinf(angle_between_vertices * i);
-			vertices[4*i + 2] = 0;
-			vertices[4*i + 3] = 1;
-		}
-		
 		// Create and bind the object's Vertex Array Object:
 		glGenVertexArrays(1, &_vao);
 		glBindVertexArray(_vao);
-		
+
 		// Create and load vertex data into a Vertex Buffer Object:
 		glGenBuffers(1, &_vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, this->_vertex_num * 4 * sizeof(float), vertices, GL_STATIC_DRAW);
-		
+
 		// Tells OpenGL that there is vertex data in this buffer object and what form that vertex data takes:
 
 		// Obtain attribute handles:
@@ -157,4 +161,7 @@ void Model::resize(int width, int height)
     _height = height;
     _offsetX = 0;
     _offsetY = 0;
+
+    int num_vertices = std::max(static_cast<int>(_width * _height / VERTEX_RATIO), MIN_VERTICES);
+    this->make_vertex_array(num_vertices);
 }
