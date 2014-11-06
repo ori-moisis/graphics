@@ -28,29 +28,48 @@ class Model {
 	
 	// Uniform handle:
 	GLint _fillColorUV;
-	GLint _squareSizeUV;
-	GLint _radiusUV;
-	GLint _offsetUV;
+	GLint _transformMatUV;
+	GLint _lightCenterUV;
+	GLint _lightRadiusUV;
+	GLint _lightFadeFactorUV;
+	GLint _shadowRadiusUV;
+	GLint _shadowFadeFactorUV;
+
 	
 	// View port frame:
 	float _width, _height, _offsetX, _offsetY;
 
+	// Number of vertices on the circle's edge
 	int _vertex_num;
 
+	// All balls
 	std::vector<Ball> _balls;
+
+	// Current light source location
+	float _lightAngle;
 
 public:
 	Model();
 	virtual ~Model();
 
+	// Create a circle vertex array
 	void make_vertex_array(int num_vertices);
 
 	void init();
 	
 	void draw();
-	
-	void add_ball(int x, int y);
 
+	// Calculate logical coordinates from screen position
+	float get_logical_x(float screen_x);
+	float get_logical_y(float screen_y);
+	// Calculate screen position from logical coordinates
+	float get_screen_x(float logical_x);
+	float get_screen_y(float logical_y);
+	
+	// Add a ball to the screen
+	void add_ball(float x, float y);
+
+	// Resize window callback
 	void resize(int width, int height);
 	
 };
