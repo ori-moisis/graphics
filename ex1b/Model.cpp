@@ -31,7 +31,7 @@ static const int MIN_VERTICES = 50;
 static const int VERTEX_RATIO = 5000;
 // Radius of the circle
 static const float BASE_RADIUS = 0.1;
-static const float MIN_RADIUS = 0.01;
+static const float MIN_RADIUS = 0.005;
 // Speed of the balls
 static const float STEP_SIZE = 0.02;
 // Lighting consts
@@ -143,33 +143,7 @@ void Model::draw()
 	std::set<size_t> balls_to_skip;
 	for (std::vector<Ball>::iterator ball = _balls.begin(); ball != _balls.end(); ++ball)
 	{
-		float avaliable_radius = ball->_max_radius;
-		for (std::vector<Ball>::iterator ball2 = _balls.begin(); ball2 != _balls.end(); ++ball2)
-		{
-			if (ball->_id != ball2->_id)
-			{
-				// Get the distance from my center to the other ball's edge
-				float dist_to_edge = glm::distance(ball->_position, ball2->_position) - ball2->_cur_radius;
-				float radius_decrease = ball->_cur_radius - dist_to_edge;
-
-				if (balls_to_skip.find(ball->_id) == balls_to_skip.end())
-				{
-					// This is the first time we see these two balls collide
-					// split the radius decrease evenly between the two balls
-					radius_decrease /= 2;
-				}
-
-				if (ball->_cur_radius - radius_decrease < avaliable_radius)
-				{
-					// This is an actual collision, mark the other ball so it will
-					// fully decrease its radius
-					balls_to_skip.insert(ball2->_id);
-					avaliable_radius = ball->_cur_radius - radius_decrease;
-				}
-			}
-		}
-		ball->_cur_radius = std::max(std::min(ball->_max_radius, avaliable_radius), MIN_RADIUS);
-
+		ball->_cur_radius = get_new_radius(*ball, balls_to_skip);
 	}
 
 	// Calculate light source location
@@ -240,12 +214,16 @@ static float get_random(float min, float max)
 
 void Model::add_ball(float x, float y)
 {
+	// Get logical coordinates
 	float logical_x = get_logical_x(x);
 	float logical_y = get_logical_y(y);
+
+	// set radius w.r.t nearby walls
 	float max_radius = std::min(BASE_RADIUS,
 								std::min(std::min(std::abs(1 - logical_x), std::abs(1 + logical_x)),
 										 std::min(std::abs(1 - logical_y), std::abs(1 + logical_y))));
 
+	// Randomize dominant color and color mix
 	int strong_color = get_random(0,3);
 	float red = get_random(0.0, 0.5);
 	float green = get_random(0.0, 0.5);
@@ -264,6 +242,7 @@ void Model::add_ball(float x, float y)
 		break;
 	}
 
+	// Prevent new balls inside existing ones
 	for (std::vector<Ball>::iterator ball = _balls.begin(); ball != _balls.end(); ++ball)
 	{
 		glm::vec4 new_center(logical_x, logical_y, 0, 1);
@@ -272,14 +251,52 @@ void Model::add_ball(float x, float y)
 			return;
 		}
 	}
-	_balls.push_back(Ball(_balls.size(),
-						  logical_x,
-						  logical_y,
-						  get_random(0, 2*M_PI),
-						  max_radius,
-						  red,
-						  green,
-						  blue));
+
+	// Create new ball object
+	Ball ball(_balls.size(),
+			  logical_x,
+		      logical_y,
+		      get_random(0, 2*M_PI),
+		      max_radius,
+		      red,
+		      green,
+		      blue);
+
+	// Set size according to surrounding balls. No need to skip existing balls
+	std::set<size_t> skip;
+	ball._max_radius = get_new_radius(ball, skip);
+
+	_balls.push_back(ball);
+}
+
+float Model::get_new_radius(const Ball& ball, std::set<size_t>& balls_to_skip)
+{
+	float avaliable_radius = ball._max_radius;
+	for (std::vector<Ball>::iterator ball2 = _balls.begin(); ball2 != _balls.end(); ++ball2)
+	{
+		if (ball._id != ball2->_id)
+		{
+			// Get the distance from my center to the other ball's edge
+			float dist_to_edge = glm::distance(ball._position, ball2->_position) - ball2->_cur_radius;
+			float radius_decrease = ball._cur_radius - dist_to_edge;
+
+			if (!balls_to_skip.empty() && balls_to_skip.find(ball._id) == balls_to_skip.end())
+			{
+				// This is the first time we see these two balls collide
+				// split the radius decrease evenly between the two balls
+				radius_decrease /= 2;
+			}
+
+			if (ball._cur_radius - radius_decrease < avaliable_radius)
+			{
+				// This is an actual collision, mark the other ball so it will
+				// fully decrease its radius
+				balls_to_skip.insert(ball2->_id);
+				avaliable_radius = ball._cur_radius - radius_decrease;
+			}
+		}
+	}
+	return std::max(std::min(ball._max_radius, avaliable_radius), MIN_RADIUS);
 }
 
 void Model::resize(int width, int height)

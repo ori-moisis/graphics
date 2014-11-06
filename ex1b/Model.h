@@ -15,6 +15,7 @@
 #include <GL/gl.h>
 #endif
 
+#include <set>
 #include <vector>
 #include "Ball.h"
 
@@ -68,6 +69,9 @@ public:
 	
 	// Add a ball to the screen
 	void add_ball(float x, float y);
+
+	// Get a new radius for the ball according to the balls around it
+	float get_new_radius(const Ball& ball, std::set<size_t>& balls_to_skip);
 
 	// Resize window callback
 	void resize(int width, int height);
