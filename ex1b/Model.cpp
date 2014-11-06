@@ -31,6 +31,7 @@ static const int MIN_VERTICES = 50;
 static const int VERTEX_RATIO = 5000;
 // Radius of the circle
 static const float BASE_RADIUS = 0.1;
+static const float MIN_RADIUS = 0.01;
 // Speed of the balls
 static const float STEP_SIZE = 0.02;
 // Lighting consts
@@ -167,7 +168,7 @@ void Model::draw()
 				}
 			}
 		}
-		ball->_cur_radius = std::min(ball->_max_radius, avaliable_radius);
+		ball->_cur_radius = std::max(std::min(ball->_max_radius, avaliable_radius), MIN_RADIUS);
 
 	}
 
@@ -196,8 +197,6 @@ void Model::draw()
 		transform = glm::scale(transform,glm::vec3(ball->_cur_radius * std::min(1.0f, _height / _width),
 									     	 	   ball->_cur_radius * std::min(1.0f, _width / _height),
 									     	 	   1));
-
-
 
 		glUniformMatrix4fv(_transformMatUV, 1, GL_FALSE, glm::value_ptr(transform));
 
@@ -265,14 +264,22 @@ void Model::add_ball(float x, float y)
 		break;
 	}
 
+	for (std::vector<Ball>::iterator ball = _balls.begin(); ball != _balls.end(); ++ball)
+	{
+		glm::vec4 new_center(logical_x, logical_y, 0, 1);
+		if (glm::distance(new_center, ball->_position) < ball->_cur_radius)
+		{
+			return;
+		}
+	}
 	_balls.push_back(Ball(_balls.size(),
 						  logical_x,
-			              logical_y,
-			              get_random(0, 2*M_PI),
-			              max_radius,
-			              red,
-			              green,
-			              blue));
+						  logical_y,
+						  get_random(0, 2*M_PI),
+						  max_radius,
+						  red,
+						  green,
+						  blue));
 }
 
 void Model::resize(int width, int height)
