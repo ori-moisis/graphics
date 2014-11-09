@@ -31,16 +31,13 @@ static const int MIN_VERTICES = 50;
 static const int VERTEX_RATIO = 5000;
 // Radius of the circle
 static const float BASE_RADIUS = 0.1;
-static const float MIN_RADIUS = 0.005;
+static const float MIN_RADIUS = 0;
 // Speed of the balls
 static const float STEP_SIZE = 0.02;
-// Lighting consts
-static const float LIGHT_POSITION = 0.5;
-static const float LIGHT_RADIUS = 300;
-static const float LIGHT_FADE_FACTOR = 0.25;
-static const float SHADOW_RADIUS = 550;
-static const float SHADOW_FADE_FACTOR = 2;
+// Rotation speed of the light source
 static const float LIGHT_SPEED = 0.02;
+// Number of balls to draw in each call to glDrawArraysInstanced
+static const int M = 10;
 
 Model::Model() :
 _vao(0), _vbo(0), _vertex_num(0), _lightAngle(0)
@@ -87,11 +84,8 @@ void Model::init()
 	// Obtain uniform variable handles:
 	_fillColorUV  = glGetUniformLocation(program, "fillColor");
 	_transformMatUV = glGetUniformLocation(program, "transform");
-	_lightCenterUV = glGetUniformLocation(program, "lightCenter");
-	_lightRadiusUV = glGetUniformLocation(program, "lightRadius");
-	_lightFadeFactorUV = glGetUniformLocation(program, "lightFadeFactor");
-	_shadowRadiusUV = glGetUniformLocation(program, "shadowRadius");
-	_shadowFadeFactorUV = glGetUniformLocation(program, "shadowFadeFactor");
+	_lightLocationUV = glGetUniformLocation(program, "lightLocation");
+	_resolutionUV = glGetUniformLocation(program, "resolution");
 
 	// Initialize vertices buffer and transfer it to OpenGL
 	{
@@ -148,38 +142,52 @@ void Model::draw()
 
 	// Calculate light source location
 	_lightAngle += LIGHT_SPEED;
-	glm::vec4 lightLocation(cosf(_lightAngle) * 2, sinf(_lightAngle) * 2, 0, 1);
+	glm::vec4 lightLocation(cosf(_lightAngle) * 0.5, sinf(_lightAngle) * 0.5, 0, 1);
+
+	// Set current resolution
+	glUniform2f(_resolutionUV, _width, _height);
+	// Set current light source location
+	glUniform4fv(_lightLocationUV, 1, glm::value_ptr(lightLocation));
+
+	// Draw using the state stored in the Vertex Array object:
+	glBindVertexArray(_vao);
 
 	// Draw the balls
-	glUniform1f(_lightFadeFactorUV, LIGHT_FADE_FACTOR);
-	glUniform1f(_shadowFadeFactorUV, SHADOW_FADE_FACTOR);
+	glm::mat4 transform[M];
+	glm::vec4 color[M];
+	int i = 0;
 	for (std::vector<Ball>::iterator ball = _balls.begin(); ball != _balls.end(); ++ball)
 	{
-		glUniform4f(_fillColorUV, ball->_red, ball->_green, ball->_blue, 1.0f);
-
-		glm::vec4 light_center = lightLocation - ball->_position;
-		light_center /= glm::length(light_center);
-		light_center *= ball->_cur_radius * LIGHT_POSITION;
-		light_center += ball->_position;
-
-		glUniform4f(_lightCenterUV, get_screen_x(light_center[0]), get_screen_y(light_center[1]), 0, 1);
-
-		glUniform1f(_lightRadiusUV, LIGHT_RADIUS * ball->_cur_radius);
-		glUniform1f(_shadowRadiusUV, SHADOW_RADIUS * ball->_cur_radius);
-
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(ball->_position.x, ball->_position.y, 0));
-		transform = glm::scale(transform,glm::vec3(ball->_cur_radius * std::min(1.0f, _height / _width),
+		transform[i] = glm::translate(glm::mat4(1.0f), glm::vec3(ball->_position.x, ball->_position.y, 0));
+		transform[i] = glm::scale(transform[i],glm::vec3(ball->_cur_radius * std::min(1.0f, _height / _width),
 									     	 	   ball->_cur_radius * std::min(1.0f, _width / _height),
 									     	 	   1));
+		color[i] = glm::vec4(ball->_red, ball->_green, ball->_blue, 1.0f);
 
-		glUniformMatrix4fv(_transformMatUV, 1, GL_FALSE, glm::value_ptr(transform));
-
-		// Draw using the state stored in the Vertex Array object:
-		glBindVertexArray(_vao);
-
-		glDrawArrays(GL_TRIANGLE_FAN, 0, this->_vertex_num);
+		if (++i == M)
+		{
+			// Flush balls
+			glUniformMatrix4fv(_transformMatUV, M, GL_FALSE, glm::value_ptr(transform[0]));
+			glUniform4fv(_fillColorUV, M, glm::value_ptr(color[0]));
+			glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, this->_vertex_num, M);
+			i = 0;
+		}
 	}
 	
+	if (i > 0)
+	{
+		// Some unflushed balls remain
+		for (; i < M; ++i)
+		{
+			// Draw dummy balls outside the screen
+			transform[i] = glm::translate(glm::mat4(1.0f), glm::vec3(2, 2, 2));
+			color[i] = glm::vec4(0, 0, 0, 1.0f);
+		}
+		glUniformMatrix4fv(_transformMatUV, M, GL_FALSE, glm::value_ptr(transform[0]));
+		glUniform4fv(_fillColorUV, M, glm::value_ptr(color[0]));
+		glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, this->_vertex_num, M);
+	}
+
 	// Unbind the Vertex Array object
 	glBindVertexArray(0);
 	
@@ -195,16 +203,6 @@ float Model::get_logical_x(float screen_x)
 float Model::get_logical_y(float screen_y)
 {
 	return ((_height - 2*screen_y) / _height);
-}
-
-float Model::get_screen_x(float logical_x)
-{
-	return (logical_x + 1) * _width / 2;
-}
-
-float Model::get_screen_y(float logical_y)
-{
-	return _height - ((_height * (1-logical_y)) / 2);
 }
 
 static float get_random(float min, float max)
@@ -224,7 +222,7 @@ void Model::add_ball(float x, float y)
 										 std::min(std::abs(1 - logical_y), std::abs(1 + logical_y))));
 
 	// Randomize dominant color and color mix
-	int strong_color = get_random(0,3);
+	int strong_color = rand() % 3;
 	float red = get_random(0.0, 0.5);
 	float green = get_random(0.0, 0.5);
 	float blue = get_random(0.0, 0.5);
@@ -280,7 +278,7 @@ float Model::get_new_radius(const Ball& ball, std::set<size_t>& balls_to_skip)
 			float dist_to_edge = glm::distance(ball._position, ball2->_position) - ball2->_cur_radius;
 			float radius_decrease = ball._cur_radius - dist_to_edge;
 
-			if (!balls_to_skip.empty() && balls_to_skip.find(ball._id) == balls_to_skip.end())
+			if (balls_to_skip.find(ball._id) == balls_to_skip.end())
 			{
 				// This is the first time we see these two balls collide
 				// split the radius decrease evenly between the two balls
@@ -296,7 +294,7 @@ float Model::get_new_radius(const Ball& ball, std::set<size_t>& balls_to_skip)
 			}
 		}
 	}
-	return std::max(std::min(ball._max_radius, avaliable_radius), MIN_RADIUS);
+	return std::max(avaliable_radius, MIN_RADIUS);
 }
 
 void Model::resize(int width, int height)

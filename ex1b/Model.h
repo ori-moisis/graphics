@@ -23,19 +23,14 @@ class Model {
 	
 	GLuint _vao, _vbo;
 
-
 	// Attribute handle:
 	GLint _posAttrib;
 	
 	// Uniform handle:
 	GLint _fillColorUV;
 	GLint _transformMatUV;
-	GLint _lightCenterUV;
-	GLint _lightRadiusUV;
-	GLint _lightFadeFactorUV;
-	GLint _shadowRadiusUV;
-	GLint _shadowFadeFactorUV;
-
+	GLint _lightLocationUV;
+	GLint _resolutionUV;
 	
 	// View port frame:
 	float _width, _height, _offsetX, _offsetY;
@@ -63,9 +58,6 @@ public:
 	// Calculate logical coordinates from screen position
 	float get_logical_x(float screen_x);
 	float get_logical_y(float screen_y);
-	// Calculate screen position from logical coordinates
-	float get_screen_x(float logical_x);
-	float get_screen_y(float logical_y);
 	
 	// Add a ball to the screen
 	void add_ball(float x, float y);
