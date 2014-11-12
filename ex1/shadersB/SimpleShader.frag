@@ -4,10 +4,10 @@ uniform vec2 resolution;
 uniform vec4 lightLocation;
 uniform vec4 fillColor[32];
 uniform mat4 transform[32];
+uniform mat4 perspective;
 
 layout(pixel_center_integer) in vec4 gl_FragCoord;
 flat in int instanceID;
-in mat4 pers;
 
 out vec4 outColor;
 
@@ -32,9 +32,8 @@ vec4 to_screen_coord(vec4 point)
 void main()
 {
 	vec4 white = vec4(1,1,1,1);
-	vec4 black = vec4(0,0,0,1);
 	float lightFadeFactor = 0.5;
-	mat4 trans = pers * transform[instanceID];
+	mat4 trans = perspective * transform[instanceID];
 	float lightRadius = length(trans * vec4(300, 0, 0, 0)) * (resolution.x / resolution.y);
 	vec4 screenLightCenter = to_screen_coord(trans * lightLocation);
 	
