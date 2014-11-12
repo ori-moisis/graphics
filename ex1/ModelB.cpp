@@ -39,7 +39,7 @@ static const float STEP_SIZE = 0.02;
 // Rotation speed of the light source
 static const float LIGHT_SPEED = 0.02;
 // Number of balls to draw in each call to glDrawArraysInstanced
-static const int M = 10;
+static const int M = 32;
 
 Model::Model() :
 _vao(0), _vbo(0), _vertex_num(0), _lightAngle(0)
@@ -182,15 +182,9 @@ void Model::draw()
 	if (i > 0)
 	{
 		// Some unflushed balls remain
-		for (; i < M; ++i)
-		{
-			// Draw dummy balls outside the screen
-			transform[i] = glm::translate(glm::mat4(1.0f), glm::vec3(2, 2, 2));
-			color[i] = glm::vec4(0, 0, 0, 1.0f);
-		}
-		glUniformMatrix4fv(_transformMatUV, M, GL_FALSE, glm::value_ptr(transform[0]));
-		glUniform4fv(_fillColorUV, M, glm::value_ptr(color[0]));
-		glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, this->_vertex_num, M);
+		glUniformMatrix4fv(_transformMatUV, i, GL_FALSE, glm::value_ptr(transform[0]));
+		glUniform4fv(_fillColorUV, i, glm::value_ptr(color[0]));
+		glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, this->_vertex_num, i);
 	}
 
 	// Unbind the Vertex Array object

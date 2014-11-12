@@ -1,7 +1,7 @@
 #version 330
 
 uniform mat4 perspective;
-uniform mat4 transform[10];
+uniform mat4 transform[32];
 
 layout(location = 0) in vec4 position;
 

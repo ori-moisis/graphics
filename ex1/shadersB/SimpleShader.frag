@@ -2,8 +2,8 @@
 
 uniform vec2 resolution;
 uniform vec4 lightLocation;
-uniform vec4 fillColor[10];
-uniform mat4 transform[10];
+uniform vec4 fillColor[32];
+uniform mat4 transform[32];
 
 layout(pixel_center_integer) in vec4 gl_FragCoord;
 flat in int instanceID;
