@@ -18,27 +18,29 @@ Ball::Ball(size_t id, float x, float y, float direction, float max_radius, float
 void Ball::move(float step_size, float width_height_ratio)
 {
 	// Check for wall collision
-	float x_radius = _cur_radius * std::min(1.0f, 1 / width_height_ratio);
-	float right_edge = _position.x + x_radius;
-	float left_edge = _position.x - x_radius;
-	float y_radius = _cur_radius * std::min(1.0f, width_height_ratio);
-	float top_edge = _position.y + y_radius;
-	float bottom_edge = _position.y - y_radius;
+	float screen_right_edge = width_height_ratio;
+	float screen_left_edge = -screen_right_edge;
 
-	if ((right_edge >= 1 && _direction.x > 0) ||
-		(left_edge <= -1 && _direction.x < 0))
+	float ball_right_edge = _position.x + _cur_radius;
+	float ball_left_edge = _position.x - _cur_radius;
+	float ball_top_edge = _position.y + _cur_radius;
+	float ball_bottom_edge = _position.y - _cur_radius;
+
+	if ((ball_right_edge >= screen_right_edge && _direction.x > 0) ||
+		(ball_left_edge <= screen_left_edge && _direction.x < 0))
 	{
 		_direction = glm::reflect(_direction, glm::vec4(1,0,0,0));
 	}
-	if ((top_edge >= 1 && _direction.y > 0) ||
-		(bottom_edge <= -1 && _direction.y < 0))
+	if ((ball_top_edge >= 1 && _direction.y > 0) ||
+		(ball_bottom_edge <= -1 && _direction.y < 0))
 	{
 		_direction = glm::reflect(_direction, glm::vec4(0,1,0,0));
 	}
 
 	// Move
-	_position.x += _direction.x * step_size * std::min(1.0f, 1 / width_height_ratio);
-	_position.y += _direction.y * step_size * std::min(1.0f, width_height_ratio);
-	_position.x = std::max(std::min(_position.x, 1 - x_radius), x_radius - 1);
-	_position.y = std::max(std::min(_position.y, 1 - y_radius), y_radius - 1);
+	_position.x += _direction.x * step_size;
+	_position.y += _direction.y * step_size;
+	// Assert ball in screen
+	_position.x = std::max(std::min(_position.x, screen_right_edge - _cur_radius), screen_left_edge + _cur_radius);
+	_position.y = std::max(std::min(_position.y, 1 - _cur_radius), _cur_radius - 1);
 }

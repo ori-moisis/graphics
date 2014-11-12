@@ -8,6 +8,8 @@
 #include "ShaderIO.h"
 #include "ModelB.h"
 
+//#define GLM_FORCE_RADIANS
+
 #include <GL/glew.h>
 #ifdef __APPLE__
 #include <OpenGL/OpenGL.h>
@@ -86,6 +88,7 @@ void Model::init()
 	_transformMatUV = glGetUniformLocation(program, "transform");
 	_lightLocationUV = glGetUniformLocation(program, "lightLocation");
 	_resolutionUV = glGetUniformLocation(program, "resolution");
+	_perspectiveUV = glGetUniformLocation(program, "perspective");
 
 	// Initialize vertices buffer and transfer it to OpenGL
 	{
@@ -149,6 +152,10 @@ void Model::draw()
 	// Set current light source location
 	glUniform4fv(_lightLocationUV, 1, glm::value_ptr(lightLocation));
 
+	glm::mat4 view = glm::lookAt(glm::vec3(0,0,1), glm::vec3(0,0,0), glm::vec3(0,1,0));
+	glm::mat4 pers = glm::perspective(90.0f, _width / _height, 0.5f, 1.5f) * view;
+	glUniformMatrix4fv(_perspectiveUV, 1, GL_FALSE, glm::value_ptr(pers));
+
 	// Draw using the state stored in the Vertex Array object:
 	glBindVertexArray(_vao);
 
@@ -159,9 +166,7 @@ void Model::draw()
 	for (std::vector<Ball>::iterator ball = _balls.begin(); ball != _balls.end(); ++ball)
 	{
 		transform[i] = glm::translate(glm::mat4(1.0f), glm::vec3(ball->_position.x, ball->_position.y, 0));
-		transform[i] = glm::scale(transform[i],glm::vec3(ball->_cur_radius * std::min(1.0f, _height / _width),
-									     	 	   ball->_cur_radius * std::min(1.0f, _width / _height),
-									     	 	   1));
+		transform[i] = glm::scale(transform[i],glm::vec3(ball->_cur_radius, ball->_cur_radius, 1));
 		color[i] = glm::vec4(ball->_red, ball->_green, ball->_blue, 1.0f);
 
 		if (++i == M)
@@ -197,7 +202,7 @@ void Model::draw()
 
 float Model::get_logical_x(float screen_x)
 {
-	return (2*screen_x / _width) - 1;
+	return ((2*screen_x / _width) - 1) * (_width / _height);
 }
 
 float Model::get_logical_y(float screen_y)
@@ -223,20 +228,20 @@ void Model::add_ball(float x, float y)
 
 	// Randomize dominant color and color mix
 	int strong_color = rand() % 3;
-	float red = get_random(0.0, 0.5);
-	float green = get_random(0.0, 0.5);
-	float blue = get_random(0.0, 0.5);
+	float red = get_random(0.0, 0.3);
+	float green = get_random(0.0, 0.3);
+	float blue = get_random(0.0, 0.3);
 
 	switch(strong_color % 3)
 	{
 	case 0:
-		red = 1;
+		red = 0.8;
 		break;
 	case 1:
-		green = 1;
+		green = 0.8;
 		break;
 	case 2:
-		blue = 1;
+		blue = 0.8;
 		break;
 	}
 

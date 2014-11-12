@@ -31,6 +31,7 @@ class Model {
 	GLint _transformMatUV;
 	GLint _lightLocationUV;
 	GLint _resolutionUV;
+	GLint _perspectiveUV;
 	
 	// View port frame:
 	float _width, _height, _offsetX, _offsetY;
