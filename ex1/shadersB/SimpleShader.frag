@@ -34,7 +34,7 @@ void main()
 	vec4 white = vec4(1,1,1,1);
 	float lightFadeFactor = 0.5;
 	mat4 trans = perspective * transform[instanceID];
-	float lightRadius = length(trans * vec4(300, 0, 0, 0)) * (resolution.x / resolution.y);
+	float lightRadius = length(trans * vec4(resolution.x / 2, 0, 0, 0));
 	vec4 screenLightCenter = to_screen_coord(trans * lightLocation);
 	
 	// Add highlight according to distance from lightCenter (closer means more white)
