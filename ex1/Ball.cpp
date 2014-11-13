@@ -18,8 +18,10 @@ Ball::Ball(size_t id, float x, float y, float direction, float max_radius, float
 void Ball::move(float step_size, float width_height_ratio)
 {
 	// Check for wall collision
-	float screen_right_edge = width_height_ratio;
+	float screen_right_edge = sqrt(width_height_ratio);
 	float screen_left_edge = -screen_right_edge;
+	float screen_top_edge = sqrt(1/width_height_ratio);
+	float screen_bottom_edge = -screen_top_edge;
 
 	float ball_right_edge = _position.x + _cur_radius;
 	float ball_left_edge = _position.x - _cur_radius;
@@ -31,8 +33,8 @@ void Ball::move(float step_size, float width_height_ratio)
 	{
 		_direction = glm::reflect(_direction, glm::vec4(1,0,0,0));
 	}
-	if ((ball_top_edge >= 1 && _direction.y > 0) ||
-		(ball_bottom_edge <= -1 && _direction.y < 0))
+	if ((ball_top_edge >= screen_top_edge && _direction.y > 0) ||
+		(ball_bottom_edge <= screen_bottom_edge && _direction.y < 0))
 	{
 		_direction = glm::reflect(_direction, glm::vec4(0,1,0,0));
 	}
@@ -42,5 +44,5 @@ void Ball::move(float step_size, float width_height_ratio)
 	_position.y += _direction.y * step_size;
 	// Assert ball in screen
 	_position.x = std::max(std::min(_position.x, screen_right_edge - _cur_radius), screen_left_edge + _cur_radius);
-	_position.y = std::max(std::min(_position.y, 1 - _cur_radius), _cur_radius - 1);
+	_position.y = std::max(std::min(_position.y, screen_top_edge - _cur_radius), screen_bottom_edge + _cur_radius);
 }

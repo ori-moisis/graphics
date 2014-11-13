@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <set>
+#include <cmath>
 
 
 #define SHADERS_DIR "shadersB/"
@@ -152,8 +153,8 @@ void Model::draw()
 	// Set current light source location
 	glUniform4fv(_lightLocationUV, 1, glm::value_ptr(lightLocation));
 
-	glm::mat4 view = glm::lookAt(glm::vec3(0,0,1), glm::vec3(0,0,0), glm::vec3(0,1,0));
-	glm::mat4 pers = glm::perspective(90.0f, _width / _height, 0.5f, 1.5f) * view;
+	float aspect = _height / _width;
+	glm::mat4 pers = glm::scale(glm::mat4(1.0f), glm::vec3(sqrt(aspect), sqrt(1 / aspect), 1));
 	glUniformMatrix4fv(_perspectiveUV, 1, GL_FALSE, glm::value_ptr(pers));
 
 	// Draw using the state stored in the Vertex Array object:
@@ -196,12 +197,12 @@ void Model::draw()
 
 float Model::get_logical_x(float screen_x)
 {
-	return ((2*screen_x / _width) - 1) * (_width / _height);
+	return ((2*screen_x / _width) - 1) * sqrt(_width / _height);
 }
 
 float Model::get_logical_y(float screen_y)
 {
-	return ((_height - 2*screen_y) / _height);
+	return ((_height - 2*screen_y) / _height) * sqrt(_height / _width);
 }
 
 static float get_random(float min, float max)
