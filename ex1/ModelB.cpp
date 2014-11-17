@@ -8,7 +8,10 @@
 #include "ShaderIO.h"
 #include "ModelB.h"
 
-//#define GLM_FORCE_RADIANS
+#ifdef WIN32
+#define _USE_MATH_DEFINES
+#include <math.h>
+#endif // WIN32
 
 #include <GL/glew.h>
 #ifdef __APPLE__
@@ -24,6 +27,7 @@
 #include <stdio.h>
 #include <set>
 #include <cmath>
+#include <algorithm>
 
 
 #define SHADERS_DIR "shadersB/"
@@ -33,12 +37,12 @@ static const int MIN_VERTICES = 50;
 // Ratio between resolution and number of vertices per circle
 static const int VERTEX_RATIO = 5000;
 // Radius of the circle
-static const float BASE_RADIUS = 0.1;
-static const float MIN_RADIUS = 0;
+static const float BASE_RADIUS = 0.1f;
+static const float MIN_RADIUS = 0.0f;
 // Speed of the balls
-static const float STEP_SIZE = 0.02;
+static const float STEP_SIZE = 0.02f;
 // Rotation speed of the light source
-static const float LIGHT_SPEED = 0.02;
+static const float LIGHT_SPEED = 0.02f;
 // Number of balls to draw in each call to glDrawArraysInstanced
 static const int M = 32;
 
@@ -60,7 +64,7 @@ void Model::make_vertex_array(int num_vertices)
 	this->_vertex_num = num_vertices;
 	// Create vertices on the circle edge
 	float* vertices = new float[this->_vertex_num * 4];
-	float angle_between_vertices = (2 * M_PI) / (num_vertices);
+	float angle_between_vertices = (2.0f * M_PI) / (num_vertices);
 	for (int i = 0; i < num_vertices; ++i)
 	{
 		vertices[4*i] = cosf(angle_between_vertices * i);

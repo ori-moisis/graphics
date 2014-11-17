@@ -13,7 +13,9 @@
 #include <algorithm>
 #include <vector>
 
+#ifndef WIN32
 #include <unistd.h>
+#endif // WIN32
 
 static programManager _sharedInstance;
 

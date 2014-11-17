@@ -76,6 +76,11 @@ int main(int argc, char* argv[])
     glutInit(&argc, argv) ;
 #ifdef __APPLE__
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_3_2_CORE_PROFILE) ;
+#elif defined WIN32
+	glutInitContextVersion(3, 1);
+	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG);
+	glutInitContextProfile(GLUT_CORE_PROFILE);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 #else
 	glutInitContextVersion(3, 3);
 	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG);
