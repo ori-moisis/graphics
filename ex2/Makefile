@@ -10,7 +10,7 @@
 ##################################################################
 
 # OpenMesh defs
-CG_HOME = /cs/course/current/cg
+CG_HOME = /cs/course/2013/cg
 OM_DIR = $(CG_HOME)/OpenMesh
 OM_LIBS = -L$(OM_DIR)/lib -lOpenMeshCore
 OM_INCLUDE=  -I$(OM_DIR)/include

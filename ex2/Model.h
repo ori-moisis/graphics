@@ -5,8 +5,8 @@
 //  Created by HUJI Computer Graphics course staff, 2013.
 //
 
-#ifndef __ex1__ModelA__
-#define __ex1__ModelA__
+#ifndef __ex2__Model__
+#define __ex2__Model__
 
 #include <iostream>
 #ifdef __APPLE__
@@ -14,6 +14,10 @@
 #else
 #include <GL/gl.h>
 #endif
+
+#include <string>
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+typedef OpenMesh::PolyMesh_ArrayKernelT<> Mesh;
 
 class Model {
 	
@@ -24,24 +28,18 @@ class Model {
 	
 	// Uniform handle:
 	GLint _fillColorUV;
-	GLint _squareSizeUV;
-	GLint _radiusUV;
 	
 	// View port frame:
-	float _width, _height, _offsetX, _offsetY;
+	float _width, _height;
 
-	// Number of vertices on the circle's edge
-	int _vertex_num;
+	Mesh _mesh;
 
 public:
 	Model();
 
 	virtual ~Model();
 
-	// Create a circle vertex array
-	void make_vertex_array(int num_vertices);
-
-	void init();
+	bool init(const std::string& mesh_filename);
 	
 	void draw();
 	
@@ -49,4 +47,4 @@ public:
 	
 };
 
-#endif /* defined(__ex1__ModelA__) */
+#endif /* defined(__ex2__Model__) */

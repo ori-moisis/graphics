@@ -69,7 +69,14 @@ Model _model;
 /** main function */
 int main(int argc, char* argv[])
 {
-	std::cout << "Starting ex1b..." << std::endl;
+	if (argc != 2)
+	{
+		std::cerr << "Usage: " << argv[0] << " <mesh filename>" << std::endl;
+		exit(1);
+	}
+	std::string mesh_filename = argv[1];
+
+	std::cout << "Starting ex2..." << std::endl;
 	
 	// Initialize GLUT
     glutInit(&argc, argv) ;
@@ -86,9 +93,10 @@ int main(int argc, char* argv[])
 	glutInitContextProfile(GLUT_CORE_PROFILE);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 #endif
+    glEnable(GL_DEPTH_TEST);
     glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
     glutInitWindowPosition(WINDOW_POS_X, WINDOW_POS_Y);
-    glutCreateWindow("CG Ex0");
+    glutCreateWindow("CG Ex2");
 	
 	// Initialize GLEW
     glewExperimental = GL_TRUE;
@@ -111,8 +119,14 @@ int main(int argc, char* argv[])
     glutMotionFunc(motion);
     glutTimerFunc(100, timer, 0);   // uint millis int value
 	
+
+
 	// Init anything that can be done once and for all:
-	_model.init();
+	if (! _model.init(mesh_filename))
+	{
+		std::cerr << "Failed to initialize model" << std::endl;
+		return 1;
+	}
 
 	// Set clear color to black:
 	glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -126,7 +140,7 @@ int main(int argc, char* argv[])
 void display(void)
 {
 	// Clear the screen buffer
-    glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// Let the model to draw itself...
 	_model.draw();
