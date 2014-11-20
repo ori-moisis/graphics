@@ -45,6 +45,17 @@ class Model {
 	glm::mat4 _view;
 	glm::mat4 _projection;
 
+
+	struct MouseClickState
+	{
+		bool _isActive;
+		glm::mat4 _transform;
+		glm::vec3 _initialMouseLocation;
+	};
+
+	std::vector<MouseClickState> _mouseStates;
+
+
 public:
 	Model();
 
@@ -56,6 +67,12 @@ public:
 	
 	void resize(int width, int height);
 	
+	glm::vec3 get_normalized_location(int x, int y);
+
+	void mouse_click(int button, bool isBegin, int x, int y);
+
+	void mouse_move(int x, int y);
+
 };
 
 #endif /* defined(__ex2__Model__) */

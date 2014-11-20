@@ -21,11 +21,14 @@
 
 #define SHADERS_DIR "shaders/"
 
-static const float OBJECT_DEPTH = 10;
+static const float OBJECT_DEPTH = 5;
 static const float OBJECT_B_RAD = 2;
 
 Model::Model() :
-_vao(0), _vbo(0)
+_vao(0),
+_vbo(0),
+_view(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, OBJECT_DEPTH))),
+_mouseStates(3, MouseClickState())
 {
 }
 
@@ -115,7 +118,6 @@ bool Model::init(const std::string& mesh_filename)
 	_model = glm::scale(glm::mat4(1.0f), glm::vec3(2/(upperRight[0] - lowerLeft[0]),
 										           2/(upperRight[1] - lowerLeft[1]),
 										           2/(upperRight[2] - lowerLeft[2]))) * _model;
-	//_model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,OBJECT_DEPTH)) * _model;
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
@@ -137,12 +139,19 @@ void Model::draw()
 
 	glUniformMatrix4fv(_modelUV, 1, GL_FALSE, glm::value_ptr(_model));
 
-	static float angle = 0.0f;
-	angle += 0.6f;
-	_view = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.5,1,0));
-	_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, OBJECT_DEPTH)) * _view;
 
-	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(_view));
+	glm::mat4 currView = _view;
+	for (std::vector<MouseClickState>::const_iterator state_iter = _mouseStates.begin();
+		 state_iter != _mouseStates.end();
+		 ++state_iter)
+	{
+		if (state_iter->_isActive)
+		{
+			currView = currView * state_iter->_transform;
+		}
+	}
+
+	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(currView));
 
 	// Perspective
 	_projection = glm::perspective(30.0f, _width / _height, OBJECT_DEPTH - OBJECT_B_RAD, OBJECT_DEPTH + OBJECT_B_RAD) *
@@ -166,9 +175,6 @@ void Model::draw()
 		}
 	}
 
-	//std::reverse(indices.begin(), indices.end());
-
-
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
 	glBindVertexArray(0);
 
@@ -180,4 +186,54 @@ void Model::resize(int width, int height)
 {
     _width	= width;
     _height = height;
+}
+
+glm::vec3 Model::get_normalized_location(int x, int y)
+{
+	glm::vec3 point(0,0,0);
+	point.x = ((2*x / _width) - 1);
+	point.y = ((_height - 2*y) / _height);
+	point.z = 0;
+	return point;
+}
+
+void Model::mouse_click(int button, bool isBegin, int x, int y)
+{
+	if (button < 0 || button > 2)
+	{
+		return;
+	}
+
+	MouseClickState& mouse_state = _mouseStates[button];
+	mouse_state._isActive = isBegin;
+	mouse_state._initialMouseLocation = get_normalized_location(x, y);
+	if (isBegin)
+	{
+		mouse_state._transform = glm::mat4(1.0f);
+	}
+	else
+	{
+		_view = mouse_state._transform * _view;
+	}
+}
+
+void Model::mouse_move(int x, int y)
+{
+	glm::vec3 mouseLocation = get_normalized_location(x,y);
+	for (size_t i = 0; i < _mouseStates.size(); ++i)
+	{
+		MouseClickState& state = _mouseStates[i];
+		if (state._isActive)
+		{
+			switch (i)
+			{
+			case GLUT_RIGHT_BUTTON:
+				state._transform = glm::translate(glm::mat4(1.0f),
+						glm::vec3(state._initialMouseLocation.x - mouseLocation.x,
+								  mouseLocation.y - state._initialMouseLocation.y,
+								  0));
+				break;
+			}
+		}
+	}
 }

@@ -224,14 +224,8 @@ void keyboard(unsigned char key, int x, int y)
  \******************************************************************/
 void mouse(int button, int state, int x, int y)
 {
-    if(button == GLUT_LEFT_BUTTON)
-    {
-    }
-    else if (button == GLUT_RIGHT_BUTTON)
-    {
-        
-    }
-    
+    _model.mouse_click(button, state == GLUT_DOWN, x, y);
+
     return;
 }
 
@@ -248,6 +242,7 @@ void mouse(int button, int state, int x, int y)
  \******************************************************************/
 void motion(int x, int y)
 {
+	_model.mouse_move(x, y);
     return;
 }
 
