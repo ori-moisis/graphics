@@ -21,7 +21,7 @@
 
 #define SHADERS_DIR "shaders/"
 
-static const float OBJECT_DEPTH = 5;
+static const float OBJECT_DEPTH = 6;
 static const float OBJECT_B_RAD = 2;
 
 Model::Model() :
@@ -51,7 +51,6 @@ bool Model::init(const std::string& mesh_filename)
 
 	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
-	glDepthRange(-OBJECT_B_RAD, OBJECT_B_RAD);
 		
 	// Obtain uniform variable handles:
 	_modelUV = glGetUniformLocation(program, "model");
