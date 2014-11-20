@@ -45,6 +45,10 @@ bool Model::init(const std::string& mesh_filename)
 				   SHADERS_DIR "SimpleShader.frag");
 
 	GLuint program = programManager::sharedInstance().programWithID("default");
+
+	// Enable depth testing
+	glEnable(GL_DEPTH_TEST);
+	glDepthRange(-OBJECT_B_RAD, OBJECT_B_RAD);
 		
 	// Obtain uniform variable handles:
 	_modelUV = glGetUniformLocation(program, "model");
@@ -161,6 +165,9 @@ void Model::draw()
 			indices.push_back(v_iter.handle().idx());
 		}
 	}
+
+	//std::reverse(indices.begin(), indices.end());
+
 
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
 	glBindVertexArray(0);
