@@ -16,7 +16,12 @@
 #endif
 
 #include <string>
+
+#include <glm/glm.hpp>
+
+#include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+
 typedef OpenMesh::PolyMesh_ArrayKernelT<> Mesh;
 
 class Model {
@@ -27,12 +32,18 @@ class Model {
 	GLint _posAttrib;
 	
 	// Uniform handle:
-	GLint _fillColorUV;
+	GLint _modelUV;
+	GLint _viewUV;
+	GLint _projectionUV;
 	
 	// View port frame:
 	float _width, _height;
 
 	Mesh _mesh;
+
+	glm::mat4 _model;
+	glm::mat4 _view;
+	glm::mat4 _projection;
 
 public:
 	Model();
