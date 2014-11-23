@@ -21,23 +21,34 @@
 
 #define SHADERS_DIR "shaders/"
 
-static const float OBJECT_DEPTH = 6;
-static const float OBJECT_B_RAD = 2;
+// Number of vertices in the arcball
+static const int ARCBALL_VERTICES = 100;
+static const glm::vec4 ARCBALL_COLOR(1.0f,1.0f,1.0f,1.0f);
+static const float ARCBALL_RAD = 0.9f;
+
+
+static const float OBJECT_DEPTH = 7.0f;
+static const float OBJECT_B_RAD = 4.0f;
+
 
 Model::Model() :
-_vao(0),
-_vbo(0),
-_view(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, OBJECT_DEPTH))),
-_mouseStates(3, MouseClickState())
+_polygonMode(GL_FILL),
+_scale(1.0f),
+_translate(1.0f),
+_rotate(1.0f),
+_mouseStates(3, MouseClickState()),
+_projectionMode (PERSPECTIVE)
 {
+	memset(_vao, 0, sizeof(_vao));
+	memset(_vbo, 0, sizeof(_vbo));
 }
 
 Model::~Model()
 {
 	if (_vao != 0)
-		glDeleteVertexArrays(1, &_vao);
+		glDeleteVertexArrays(2, _vao);
 	if (_vbo != 0)
-		glDeleteBuffers(1, &_vbo);
+		glDeleteBuffers(2, _vbo);
 }
 
 bool Model::init(const std::string& mesh_filename)
@@ -51,35 +62,16 @@ bool Model::init(const std::string& mesh_filename)
 
 	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
-		
+
 	// Obtain uniform variable handles:
 	_modelUV = glGetUniformLocation(program, "model");
 	_viewUV = glGetUniformLocation(program, "view");
 	_projectionUV = glGetUniformLocation(program, "projection");
+	_isArcballUV = glGetUniformLocation(program, "isArcball");
 
-	// Initialize vertices buffer and transfer it to OpenGL
-	{
-		// Create and bind the object's Vertex Array Object:
-		glGenVertexArrays(1, &_vao);
-		glBindVertexArray(_vao);
-		
-		// Create and load vertex data into a Vertex Buffer Object:
-		glGenBuffers(1, &_vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	// Obtain attribute handles:
+	_posAttrib = glGetAttribLocation(program, "position");
 
-		// Obtain attribute handles:
-		_posAttrib = glGetAttribLocation(program, "position");
-		glEnableVertexAttribArray(_posAttrib);
-		glVertexAttribPointer(_posAttrib, // attribute handle
-							  4,          // number of scalars per vertex
-							  GL_FLOAT,   // scalar type
-							  GL_FALSE,
-							  0,
-							  0);
-		
-		// Unbind vertex array:
-		glBindVertexArray(0);
-	}
 
 	// Load mesh
 	if (!OpenMesh::IO::read_mesh(_mesh, mesh_filename.c_str()))
@@ -88,13 +80,14 @@ bool Model::init(const std::string& mesh_filename)
 		return false;
 	}
 
+	// Create mesh vertices
 	const float fmax = std::numeric_limits<float>::max();
 	const float fmin = std::numeric_limits<float>::min();
 	Mesh::Point lowerLeft(fmax, fmax, fmax);
 	Mesh::Point upperRight(fmin, fmin, fmin);
 	Mesh::Point center(0,0,0);
 
-	float* vertices = new float[_mesh.n_vertices() * 4];
+	float* mesh_vertices = new float[_mesh.n_vertices() * 4];
 	int i = 0;
 	for (Mesh::VertexIter iter = _mesh.vertices_begin();
 		 iter != _mesh.vertices_end();
@@ -104,25 +97,84 @@ bool Model::init(const std::string& mesh_filename)
 		center += p;
 		for (int j = 0; j < 3; ++j)
 		{
-			vertices[4*i + j] = p[j];
+			mesh_vertices[4*i + j] = p[j];
 			lowerLeft[j] = std::min(lowerLeft[j], p[j]);
 			upperRight[j] = std::max(upperRight[j], p[j]);
 		}
-		vertices[4*i + 3] = 1;
+		mesh_vertices[4*i + 3] = 1;
 	}
 	center /= (double)_mesh.n_vertices();
 
+	for (Mesh::FaceIter iter = _mesh.faces_begin();
+		 iter != _mesh.faces_end();
+		 ++iter)
+	{
+		for (Mesh::FaceVertexIter v_iter = _mesh.fv_begin(iter); v_iter != _mesh.fv_end(iter); ++v_iter)
+		{
+			_elementIndices.push_back(v_iter.handle().idx());
+		}
+	}
 
 	_model = glm::translate(glm::mat4(1.0f), glm::vec3(-center[0], -center[1], -center[2]));
 	_model = glm::scale(glm::mat4(1.0f), glm::vec3(2/(upperRight[0] - lowerLeft[0]),
-										           2/(upperRight[1] - lowerLeft[1]),
-										           2/(upperRight[2] - lowerLeft[2]))) * _model;
+												   2/(upperRight[1] - lowerLeft[1]),
+												   2/(upperRight[2] - lowerLeft[2]))) * _model;
+
+	// Create arcball vertices
+	float* arc_vertices = new float[ARCBALL_VERTICES * 4];
+	float angle_between_vertices = (2 * M_PI) / (ARCBALL_VERTICES);
+	for (int i = 0; i < ARCBALL_VERTICES; ++i)
+	{
+		arc_vertices[4*i] = cosf(angle_between_vertices * i) * ARCBALL_RAD;
+		arc_vertices[4*i + 1] = sinf(angle_between_vertices * i) * ARCBALL_RAD;
+		arc_vertices[4*i + 2] = -1;
+		arc_vertices[4*i + 3] = 1;
+	}
 
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-    glBufferData(GL_ARRAY_BUFFER, _mesh.n_vertices() * 4 * sizeof(float), vertices, GL_STATIC_DRAW);
+	// Create the objects' Vertex Array Object:
+	glGenVertexArrays(2, _vao);
+	glGenBuffers(2, _vbo);
 
-    delete [] vertices;
+	// Create and bind the mesh VAO
+	glBindVertexArray(_vao[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
+
+
+	glEnableVertexAttribArray(_posAttrib);
+	glVertexAttribPointer(_posAttrib, // attribute handle
+						  4,          // number of scalars per vertex
+						  GL_FLOAT,   // scalar type
+						  GL_FALSE,
+						  0,
+						  0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, _mesh.n_vertices() * 4 * sizeof(float), mesh_vertices, GL_STATIC_DRAW);
+
+    // Unbind vertex array:
+   	//glBindVertexArray(0);
+
+   	// Bind arcball vertex array
+   	glBindVertexArray(_vao[1]);
+   	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+
+	glEnableVertexAttribArray(_posAttrib);
+	glVertexAttribPointer(_posAttrib, // attribute handle
+						  4,          // number of scalars per vertex
+						  GL_FLOAT,   // scalar type
+						  GL_FALSE,
+						  0,
+						  0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, ARCBALL_VERTICES * 4 * sizeof(float), arc_vertices, GL_STATIC_DRAW);
+
+	// Unbind vertex array:
+	glBindVertexArray(0);
+
+    delete [] mesh_vertices;
+    delete [] arc_vertices;
 
 	return true;
 }
@@ -133,48 +185,51 @@ void Model::draw()
 	GLuint program = programManager::sharedInstance().programWithID("default");
 	glUseProgram(program);
 
-	GLenum polygonMode = GL_FILL;   // Also try using GL_FILL and GL_POINT
-	glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
+	glPolygonMode(GL_FRONT_AND_BACK, _polygonMode);
 
 	glUniformMatrix4fv(_modelUV, 1, GL_FALSE, glm::value_ptr(_model));
 
 
-	glm::mat4 currView = _view;
-	for (std::vector<MouseClickState>::const_iterator state_iter = _mouseStates.begin();
-		 state_iter != _mouseStates.end();
-		 ++state_iter)
-	{
-		if (state_iter->_isActive)
-		{
-			currView = currView * state_iter->_transform;
-		}
-	}
+	glm::mat4 view = _mouseStates[GLUT_RIGHT_BUTTON]._transform * _translate *
+			         _mouseStates[GLUT_MIDDLE_BUTTON]._transform * _scale *
+			         _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
 
-	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(currView));
+	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(view));
 
 	// Perspective
-	_projection = glm::perspective(30.0f, _width / _height, OBJECT_DEPTH - OBJECT_B_RAD, OBJECT_DEPTH + OBJECT_B_RAD) *
-			      glm::lookAt(glm::vec3(0,0,0) /* eye */,
-            				  glm::vec3(0,0,OBJECT_DEPTH) /* center */,
-            				  glm::vec3(0,1,0) /* up */);
+	float fov = 30.0f;
+	float near = OBJECT_DEPTH - OBJECT_B_RAD;
+	float far = OBJECT_DEPTH + OBJECT_B_RAD;
+	if (_projectionMode == PERSPECTIVE)
+	{
+		_projection = glm::perspectiveFov(fov, _width, _height, near, far);
+	}
+	else
+	{
+		_projection = glm::ortho(-near * sinf(fov/2),
+								 near * sinf(fov/2),
+								 -near * sinf(fov/2),
+								 near * sinf(fov/2),
+								 near, far);
+	}
+	_projection = _projection * glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-OBJECT_DEPTH));
 
 	glUniformMatrix4fv(_projectionUV, 1, GL_FALSE, glm::value_ptr(_projection));
 
 	// Draw using the state stored in the Vertex Array object:
-	glBindVertexArray(_vao);
+	glUniform1i(_isArcballUV, 0);
+	glBindVertexArray(_vao[0]);
+	glDrawElements(GL_TRIANGLES, _elementIndices.size(), GL_UNSIGNED_INT, &_elementIndices[0]);
 
-	std::vector<unsigned int> indices;
-	for (Mesh::FaceIter iter = _mesh.faces_begin();
-		 iter != _mesh.faces_end();
-		 ++iter)
-	{
-		for (Mesh::FaceVertexIter v_iter = _mesh.fv_begin(iter); v_iter != _mesh.fv_end(iter); ++v_iter)
-		{
-			indices.push_back(v_iter.handle().idx());
-		}
-	}
+	// Draw arcball circle
+	glBindVertexArray(_vao[1]);
+	glUniform1i(_isArcballUV, 1);
+	glUniformMatrix4fv(_modelUV, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
+	glUniformMatrix4fv(_projectionUV, 1, GL_FALSE,
+			glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(1, _width / _height, 1))));
 
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
+	glDrawArrays(GL_LINE_LOOP, 0, ARCBALL_VERTICES);
 	glBindVertexArray(0);
 
 	// Cleanup, not strictly necessary
@@ -192,7 +247,16 @@ glm::vec3 Model::get_normalized_location(int x, int y)
 	glm::vec3 point(0,0,0);
 	point.x = ((2*x / _width) - 1);
 	point.y = ((_height - 2*y) / _height);
-	point.z = 0;
+	float zSqr = pow(ARCBALL_RAD,2) - pow(point.x,2) - pow(point.y, 2);
+	if (zSqr > 0)
+	{
+		point.z = sqrt(zSqr);
+	}
+	else
+	{
+		point.z = 0;
+	}
+
 	return point;
 }
 
@@ -206,13 +270,21 @@ void Model::mouse_click(int button, bool isBegin, int x, int y)
 	MouseClickState& mouse_state = _mouseStates[button];
 	mouse_state._isActive = isBegin;
 	mouse_state._initialMouseLocation = get_normalized_location(x, y);
-	if (isBegin)
+	if (! isBegin)
 	{
+		switch (button)
+		{
+		case GLUT_RIGHT_BUTTON:
+			_translate = _translate * mouse_state._transform;
+			break;
+		case GLUT_MIDDLE_BUTTON:
+			_scale = _scale * mouse_state._transform;
+			break;
+		case GLUT_LEFT_BUTTON:
+			_rotate = mouse_state._transform * _rotate;
+			break;
+		}
 		mouse_state._transform = glm::mat4(1.0f);
-	}
-	else
-	{
-		_view = mouse_state._transform * _view;
 	}
 }
 
@@ -228,11 +300,42 @@ void Model::mouse_move(int x, int y)
 			{
 			case GLUT_RIGHT_BUTTON:
 				state._transform = glm::translate(glm::mat4(1.0f),
-						glm::vec3(state._initialMouseLocation.x - mouseLocation.x,
+						glm::vec3(mouseLocation.x - state._initialMouseLocation.x,
 								  mouseLocation.y - state._initialMouseLocation.y,
 								  0));
+				break;
+			case GLUT_MIDDLE_BUTTON:
+				state._transform = glm::scale(glm::mat4(1.0f),
+						glm::vec3(exp(state._initialMouseLocation.y - mouseLocation.y)));
+				break;
+			case GLUT_LEFT_BUTTON:
+				if (mouseLocation.z != 0)
+				{
+					glm::vec3 rotation_axis = glm::cross(state._initialMouseLocation, mouseLocation);
+					float dot = glm::dot(glm::normalize(state._initialMouseLocation),
+							             glm::normalize(mouseLocation));
+					float rotation_angle = acos(dot) * 2 * 360 / (2 * M_PI);
+					state._transform = glm::rotate(glm::mat4(1.0f),rotation_angle, rotation_axis);
+				}
 				break;
 			}
 		}
 	}
+}
+
+void Model::reset()
+{
+	_scale = glm::mat4(1.0f);
+	_translate = glm::mat4(1.0f);
+	_rotate = glm::mat4(1.0f);
+}
+
+void Model::switchPolygonMode()
+{
+	_polygonMode = (_polygonMode == GL_FILL) ? GL_LINE : GL_FILL;
+}
+
+void Model::switchPerspective()
+{
+	_projectionMode = (_projectionMode == PERSPECTIVE) ? ORTHO : PERSPECTIVE;
 }
