@@ -46,9 +46,9 @@ _projectionMode (PERSPECTIVE)
 
 Model::~Model()
 {
-	if (_vao != 0)
+	if (_vao[0] != 0)
 		glDeleteVertexArrays(2, _vao);
-	if (_vbo != 0)
+	if (_vbo[0] != 0)
 		glDeleteBuffers(2, _vbo);
 }
 
@@ -82,10 +82,9 @@ bool Model::init(const std::string& mesh_filename)
 	}
 
 	// Create mesh vertices
-	const float fmax = std::numeric_limits<float>::max();
-	const float fmin = std::numeric_limits<float>::min();
-	Mesh::Point lowerLeft(fmax, fmax, fmax);
-	Mesh::Point upperRight(fmin, fmin, fmin);
+	const float max_float = std::numeric_limits<float>::max();
+	Mesh::Point lowerLeft(max_float, max_float, max_float);
+	Mesh::Point upperRight(-max_float, -max_float, -max_float);
 	Mesh::Point center(0,0,0);
 
 	float* mesh_vertices = new float[_mesh.n_vertices() * 4];
@@ -99,8 +98,8 @@ bool Model::init(const std::string& mesh_filename)
 		for (int j = 0; j < 3; ++j)
 		{
 			mesh_vertices[4*i + j] = p[j];
-			lowerLeft[j] = std::min(lowerLeft[j], p[j]);
-			upperRight[j] = std::max(upperRight[j], p[j]);
+			lowerLeft[j] = fmin(lowerLeft[j], p[j]);
+			upperRight[j] = fmax(upperRight[j], p[j]);
 		}
 		mesh_vertices[4*i + 3] = 1;
 	}
@@ -188,6 +187,11 @@ bool Model::init(const std::string& mesh_filename)
 
 void Model::draw()
 {
+	if (_width <= 0 || _height <= 0)
+	{
+		// Cannot draw before we know the screen size
+		return;
+	}
 	// Set the program to be used in subsequent lines:
 	GLuint program = programManager::sharedInstance().programWithID("default");
 	glUseProgram(program);
