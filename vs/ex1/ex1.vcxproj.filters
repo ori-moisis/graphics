@@ -15,30 +15,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ex1\Ball.cpp">
+    <None Include="..\..\ex2\.cproject" />
+    <None Include="..\..\ex2\.project" />
+    <None Include="..\..\ex2\Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\ex2\ex2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ex1\ex1b.cpp">
+    <ClCompile Include="..\..\ex2\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ex1\ModelB.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\ex1\ShaderIO.cpp">
+    <ClCompile Include="..\..\ex2\ShaderIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ex1\Ball.h">
+    <ClInclude Include="..\..\ex2\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ex1\ex1b.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\ex1\ModelB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\ex1\ShaderIO.h">
+    <ClInclude Include="..\..\ex2\ShaderIO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

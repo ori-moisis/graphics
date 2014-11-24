@@ -8,6 +8,8 @@
 #include "ShaderIO.h"
 #include "Model.h"
 
+#define GLM_FORCE_RADIANS
+
 #include <GL/glew.h>
 #ifdef __APPLE__
 #include <OpenGL/OpenGL.h>
@@ -28,7 +30,7 @@ static const float ARCBALL_RAD = 0.9f;
 
 
 static const float OBJECT_DEPTH = 7.0f;
-static const float OBJECT_B_RAD = 4.0f;
+static const float OBJECT_B_RAD = 2.0f;
 
 
 Model::Model() :
@@ -93,7 +95,7 @@ bool Model::init(const std::string& mesh_filename)
 		 iter != _mesh.vertices_end();
 		 ++iter, ++i)
 	{
-		Mesh::Point p = _mesh.point(iter);
+		Mesh::Point p = _mesh.point(*iter);
 		center += p;
 		for (int j = 0; j < 3; ++j)
 		{
@@ -109,9 +111,10 @@ bool Model::init(const std::string& mesh_filename)
 		 iter != _mesh.faces_end();
 		 ++iter)
 	{
-		for (Mesh::FaceVertexIter v_iter = _mesh.fv_begin(iter); v_iter != _mesh.fv_end(iter); ++v_iter)
+		Mesh::FaceVertexIter end_iter = _mesh.fv_end(*iter);
+		for (Mesh::FaceVertexIter v_iter = _mesh.fv_begin(*iter); v_iter != end_iter; ++v_iter)
 		{
-			_elementIndices.push_back(v_iter.handle().idx());
+			_elementIndices.push_back(v_iter->idx());
 		}
 	}
 
@@ -198,19 +201,20 @@ void Model::draw()
 
 	// Perspective
 	float fov = 30.0f;
-	float near = OBJECT_DEPTH - OBJECT_B_RAD;
-	float far = OBJECT_DEPTH + OBJECT_B_RAD;
+	float zNear = OBJECT_DEPTH - OBJECT_B_RAD;
+	float zFar = OBJECT_DEPTH + OBJECT_B_RAD;
 	if (_projectionMode == PERSPECTIVE)
 	{
-		_projection = glm::perspectiveFov(fov, _width, _height, near, far);
+		_projection = glm::perspectiveFov(fov, _width, _height, zNear, zFar);
 	}
 	else
 	{
-		_projection = glm::ortho(-near * sinf(fov/2),
-								 near * sinf(fov/2),
-								 -near * sinf(fov/2),
-								 near * sinf(fov/2),
-								 near, far);
+		//_projection = glm::ortho(-1/sinf(fov / 2), 1/sinf(fov / 2), -1/sinf(fov / 2), 1/sinf(fov / 2), zNear, zFar);
+		_projection = glm::ortho(-zNear * sinf(fov/2),
+								 zNear * sinf(fov/2),
+								 -zNear * sinf(fov/2),
+								 zNear * sinf(fov/2),
+								 zNear, zFar);
 	}
 	_projection = _projection * glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-OBJECT_DEPTH));
 
@@ -314,7 +318,7 @@ void Model::mouse_move(int x, int y)
 					glm::vec3 rotation_axis = glm::cross(state._initialMouseLocation, mouseLocation);
 					float dot = glm::dot(glm::normalize(state._initialMouseLocation),
 							             glm::normalize(mouseLocation));
-					float rotation_angle = acos(dot) * 2 * 360 / (2 * M_PI);
+					float rotation_angle = acos(dot) * 2;
 					state._transform = glm::rotate(glm::mat4(1.0f),rotation_angle, rotation_axis);
 				}
 				break;
@@ -338,4 +342,11 @@ void Model::switchPolygonMode()
 void Model::switchPerspective()
 {
 	_projectionMode = (_projectionMode == PERSPECTIVE) ? ORTHO : PERSPECTIVE;
+}
+
+Model::MouseClickState::MouseClickState() :
+_isActive(false),
+_transform(1.0f),
+_initialMouseLocation(0.0f)
+{
 }

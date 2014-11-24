@@ -58,6 +58,7 @@ class Model {
 
 	struct MouseClickState
 	{
+		MouseClickState();
 		bool _isActive;
 		glm::mat4 _transform;
 		glm::vec3 _initialMouseLocation;
