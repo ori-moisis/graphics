@@ -31,5 +31,10 @@ ex0
 # Eclipse shit
 .settings
 
+# Visual studio shit
+*.vcxproj
+*.suo
+*.sdf
+
 # Other stuff
 meshes
