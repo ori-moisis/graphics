@@ -118,10 +118,15 @@ bool Model::init(const std::string& mesh_filename)
 		}
 	}
 
+	// Scale the largest dimension to -1:1
+	float scale_factor = 0; // std::numeric_limits<float>::max();
+	for (int i = 0; i < 3; ++i)
+	{
+		scale_factor = std::max(scale_factor, upperRight[i] - lowerLeft[i]);
+	}
+
 	_model = glm::translate(glm::mat4(1.0f), glm::vec3(-center[0], -center[1], -center[2]));
-	_model = glm::scale(glm::mat4(1.0f), glm::vec3(2/(upperRight[0] - lowerLeft[0]),
-												   2/(upperRight[1] - lowerLeft[1]),
-												   2/(upperRight[2] - lowerLeft[2]))) * _model;
+	_model = glm::scale(glm::mat4(1.0f), glm::vec3(2/scale_factor)) * _model;
 
 	// Create arcball vertices
 	float* arc_vertices = new float[ARCBALL_VERTICES * 4];
