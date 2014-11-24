@@ -25,11 +25,10 @@
 
 // Number of vertices in the arcball
 static const int ARCBALL_VERTICES = 100;
-static const glm::vec4 ARCBALL_COLOR(1.0f,1.0f,1.0f,1.0f);
 static const float ARCBALL_RAD = 0.9f;
 
 
-static const float OBJECT_DEPTH = 7.0f;
+static const float OBJECT_DEPTH = 6.0f;
 static const float OBJECT_B_RAD = 2.0f;
 
 
@@ -114,7 +113,7 @@ bool Model::init(const std::string& mesh_filename)
 		Mesh::FaceVertexIter end_iter = _mesh.fv_end(*iter);
 		for (Mesh::FaceVertexIter v_iter = _mesh.fv_begin(*iter); v_iter != end_iter; ++v_iter)
 		{
-			_elementIndices.push_back(v_iter->idx());
+			_elementIndices.push_back(v_iter.handle().idx());
 		}
 	}
 
@@ -210,16 +209,11 @@ void Model::draw()
 	float zFar = OBJECT_DEPTH + OBJECT_B_RAD;
 	if (_projectionMode == PERSPECTIVE)
 	{
-		_projection = glm::perspectiveFov(fov, _width, _height, zNear, zFar);
+		_projection = glm::perspectiveFov((float)(fov * 2 * M_PI / 360.0f), _width, _height, zNear, zFar);
 	}
 	else
 	{
-		//_projection = glm::ortho(-1/sinf(fov / 2), 1/sinf(fov / 2), -1/sinf(fov / 2), 1/sinf(fov / 2), zNear, zFar);
-		_projection = glm::ortho(-zNear * sinf(fov/2),
-								 zNear * sinf(fov/2),
-								 -zNear * sinf(fov/2),
-								 zNear * sinf(fov/2),
-								 zNear, zFar);
+		_projection = glm::ortho(-1/sinf(fov / 2), 1/sinf(fov / 2), -1/sinf(fov / 2), 1/sinf(fov / 2), zNear, zFar);
 	}
 	_projection = _projection * glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-OBJECT_DEPTH));
 
