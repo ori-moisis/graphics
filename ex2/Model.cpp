@@ -117,7 +117,7 @@ bool Model::init(const std::string& mesh_filename)
 	}
 
 	// Scale the largest dimension to -1:1
-	float scale_factor = 0; // std::numeric_limits<float>::max();
+	float scale_factor = 0;
 	for (int i = 0; i < 3; ++i)
 	{
 		scale_factor = std::max(scale_factor, upperRight[i] - lowerLeft[i]);
