@@ -25,10 +25,16 @@
 
 // Number of vertices in the arcball
 static const int ARCBALL_VERTICES = 100;
-static const float ARCBALL_RAD = 0.9f;
+// arcball radius
+static const float ARCBALL_RAD = 0.8f;
 
+// Scale limits
+static const float MAX_SCALE = 1.7f;
+static const float MIN_SCALE = -2.5f;
 
-static const float OBJECT_DEPTH = 6.0f;
+// Depth of the mesh
+static const float OBJECT_DEPTH = 7.6f;
+// clipping plane distance from object
 static const float OBJECT_B_RAD = 2.0f;
 
 
@@ -200,15 +206,18 @@ void Model::draw()
 
 	glUniformMatrix4fv(_modelUV, 1, GL_FALSE, glm::value_ptr(_model));
 
+	float currScaleFactor = std::max(MIN_SCALE, std::min(MAX_SCALE, _scaleValue + _tmpScaleValue));
+	glm::mat4 currScale = glm::scale(glm::mat4(1.0f), glm::vec3(exp(currScaleFactor)));
 
 	glm::mat4 view = _mouseStates[GLUT_RIGHT_BUTTON]._transform * _translate *
-			         _mouseStates[GLUT_MIDDLE_BUTTON]._transform * _scale *
+			         //_mouseStates[GLUT_MIDDLE_BUTTON]._transform * _scale *
+					 //currScale *
 			         _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
 
 	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(view));
 
 	// Perspective
-	float fov = 30.0f;
+	float fov = 30.0f + currScaleFactor;
 	float zNear = OBJECT_DEPTH - OBJECT_B_RAD;
 	float zFar = OBJECT_DEPTH + OBJECT_B_RAD;
 	if (_projectionMode == PERSPECTIVE)
@@ -285,6 +294,8 @@ void Model::mouse_click(int button, bool isBegin, int x, int y)
 			_translate = _translate * mouse_state._transform;
 			break;
 		case GLUT_MIDDLE_BUTTON:
+			_scaleValue = std::max(MIN_SCALE, std::min(MAX_SCALE, _scaleValue + _tmpScaleValue));
+			_tmpScaleValue = 0;
 			_scale = _scale * mouse_state._transform;
 			break;
 		case GLUT_LEFT_BUTTON:
@@ -312,6 +323,7 @@ void Model::mouse_move(int x, int y)
 								  0));
 				break;
 			case GLUT_MIDDLE_BUTTON:
+				_tmpScaleValue = state._initialMouseLocation.y - mouseLocation.y;
 				state._transform = glm::scale(glm::mat4(1.0f),
 						glm::vec3(exp(state._initialMouseLocation.y - mouseLocation.y)));
 				break;

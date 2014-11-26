@@ -52,6 +52,8 @@ class Model {
 	glm::mat4 _model;
 	glm::mat4 _projection;
 
+	float _scaleValue;
+	float _tmpScaleValue;
 	glm::mat4 _scale;
 	glm::mat4 _translate;
 	glm::mat4 _rotate;
