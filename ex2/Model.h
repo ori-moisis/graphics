@@ -52,11 +52,12 @@ class Model {
 	glm::mat4 _model;
 	glm::mat4 _projection;
 
-	float _scaleValue;
-	float _tmpScaleValue;
-	glm::mat4 _scale;
+	// Currnet field of view
+	float _fov;
 	glm::mat4 _translate;
 	glm::mat4 _rotate;
+
+	float _fovChange;
 
 	struct MouseClickState
 	{

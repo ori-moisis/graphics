@@ -28,19 +28,15 @@ static const int ARCBALL_VERTICES = 100;
 // arcball radius
 static const float ARCBALL_RAD = 0.8f;
 
-// Scale limits
-static const float MAX_SCALE = 1.7f;
-static const float MIN_SCALE = -2.5f;
-
 // Depth of the mesh
 static const float OBJECT_DEPTH = 7.6f;
 // clipping plane distance from object
-static const float OBJECT_B_RAD = 2.0f;
+static const float OBJECT_B_RAD = 1.1f;
 
 
 Model::Model() :
 _polygonMode(GL_FILL),
-_scale(1.0f),
+_fov(static_cast<float>(30.0f * M_PI / 180.0f)),
 _translate(1.0f),
 _rotate(1.0f),
 _mouseStates(3, MouseClickState()),
@@ -164,9 +160,6 @@ bool Model::init(const std::string& mesh_filename)
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
     glBufferData(GL_ARRAY_BUFFER, _mesh.n_vertices() * 4 * sizeof(float), mesh_vertices, GL_STATIC_DRAW);
 
-    // Unbind vertex array:
-   	//glBindVertexArray(0);
-
    	// Bind arcball vertex array
    	glBindVertexArray(_vao[1]);
    	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
@@ -206,28 +199,33 @@ void Model::draw()
 
 	glUniformMatrix4fv(_modelUV, 1, GL_FALSE, glm::value_ptr(_model));
 
-	float currScaleFactor = std::max(MIN_SCALE, std::min(MAX_SCALE, _scaleValue + _tmpScaleValue));
-	glm::mat4 currScale = glm::scale(glm::mat4(1.0f), glm::vec3(exp(currScaleFactor)));
-
 	glm::mat4 view = _mouseStates[GLUT_RIGHT_BUTTON]._transform * _translate *
-			         //_mouseStates[GLUT_MIDDLE_BUTTON]._transform * _scale *
-					 //currScale *
-			         _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
+			 _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
 
 	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(view));
 
 	// Perspective
-	float fov = 30.0f + currScaleFactor;
+	float fov = _fov + _fovChange;
 	float zNear = OBJECT_DEPTH - OBJECT_B_RAD;
 	float zFar = OBJECT_DEPTH + OBJECT_B_RAD;
 	if (_projectionMode == PERSPECTIVE)
 	{
-		_projection = glm::perspectiveFov((float)(fov * 2 * M_PI / 360.0f), _width, _height, zNear, zFar);
+		_projection = glm::perspective(fov, 1.0f, zNear, zFar);
 	}
 	else
 	{
-		_projection = glm::ortho(-1/sinf(fov / 2), 1/sinf(fov / 2), -1/sinf(fov / 2), 1/sinf(fov / 2), zNear, zFar);
+		float offsetFromCenter = zNear * sin(fov/2);
+		_projection = glm::ortho(-offsetFromCenter, 
+								 offsetFromCenter, 
+								 -offsetFromCenter, 
+								 offsetFromCenter, 
+								 zNear, zFar);
 	}
+	// Manually fix aspect ratio so it will behave the same for perspective and ortho 
+	// (and conform with school solution)
+	_projection = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, _width / _height, 1.0f)) * _projection;
+	// Move the object to the required depth as the last step before projection so the object
+	// depth won't be affected by any other transformation
 	_projection = _projection * glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-OBJECT_DEPTH));
 
 	glUniformMatrix4fv(_projectionUV, 1, GL_FALSE, glm::value_ptr(_projection));
@@ -294,9 +292,8 @@ void Model::mouse_click(int button, bool isBegin, int x, int y)
 			_translate = _translate * mouse_state._transform;
 			break;
 		case GLUT_MIDDLE_BUTTON:
-			_scaleValue = std::max(MIN_SCALE, std::min(MAX_SCALE, _scaleValue + _tmpScaleValue));
-			_tmpScaleValue = 0;
-			_scale = _scale * mouse_state._transform;
+			_fov = _fov + _fovChange;
+			_fovChange = 0;
 			break;
 		case GLUT_LEFT_BUTTON:
 			_rotate = mouse_state._transform * _rotate;
@@ -323,9 +320,7 @@ void Model::mouse_move(int x, int y)
 								  0));
 				break;
 			case GLUT_MIDDLE_BUTTON:
-				_tmpScaleValue = state._initialMouseLocation.y - mouseLocation.y;
-				state._transform = glm::scale(glm::mat4(1.0f),
-						glm::vec3(exp(state._initialMouseLocation.y - mouseLocation.y)));
+				_fovChange = std::max(-_fov + 0.1f, std::min(static_cast<float>(M_PI - _fov - 0.1f), mouseLocation.y - state._initialMouseLocation.y));
 				break;
 			case GLUT_LEFT_BUTTON:
 				if (mouseLocation.z != 0)
@@ -344,7 +339,7 @@ void Model::mouse_move(int x, int y)
 
 void Model::reset()
 {
-	_scale = glm::mat4(1.0f);
+	_fov = static_cast<float>(30.0f * M_PI / 180.0f);
 	_translate = glm::mat4(1.0f);
 	_rotate = glm::mat4(1.0f);
 }
