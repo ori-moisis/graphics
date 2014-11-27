@@ -31,7 +31,7 @@ static const float ARCBALL_RAD = 0.8f;
 // Depth of the mesh
 static const float OBJECT_DEPTH = 7.6f;
 // clipping plane distance from object
-static const float OBJECT_B_RAD = 1.1f;
+static const float OBJECT_B_RAD = 4.0f;
 
 
 Model::Model() :
@@ -214,7 +214,7 @@ void Model::draw()
 	}
 	else
 	{
-		float offsetFromCenter = zNear * sin(fov/2);
+		float offsetFromCenter = OBJECT_DEPTH * sin(fov/2);
 		_projection = glm::ortho(-offsetFromCenter, 
 								 offsetFromCenter, 
 								 -offsetFromCenter, 
