@@ -214,7 +214,7 @@ void Model::draw()
 	}
 	else
 	{
-		float offsetFromCenter = OBJECT_DEPTH * sin(fov/2);
+		float offsetFromCenter = OBJECT_DEPTH * tan(fov/2);
 		_projection = glm::ortho(-offsetFromCenter, 
 								 offsetFromCenter, 
 								 -offsetFromCenter, 
@@ -320,7 +320,9 @@ void Model::mouse_move(int x, int y)
 								  0));
 				break;
 			case GLUT_MIDDLE_BUTTON:
-				_fovChange = std::max(-_fov + 0.1f, std::min(static_cast<float>(M_PI - _fov - 0.1f), mouseLocation.y - state._initialMouseLocation.y));
+				_fovChange = std::max(-_fov + 0.1f,
+						std::min(static_cast<float>(M_PI - _fov - 0.35f),
+								mouseLocation.y - state._initialMouseLocation.y));
 				break;
 			case GLUT_LEFT_BUTTON:
 				if (mouseLocation.z != 0)
