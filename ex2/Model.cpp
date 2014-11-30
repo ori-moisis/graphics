@@ -32,11 +32,16 @@ static const float ARCBALL_RAD = 0.8f;
 static const float OBJECT_DEPTH = 7.6f;
 // clipping plane distance from object
 static const float OBJECT_B_RAD = 4.0f;
+// FOV (degrees)
+static const float FOV = 30.0f;
+// FOV limits (radians)
+static const float MIN_FOV = 0.1f;
+static const float MAX_FOV = M_PI - 0.35f;
 
 
 Model::Model() :
 _polygonMode(GL_FILL),
-_fov(static_cast<float>(30.0f * M_PI / 180.0f)),
+_fov(static_cast<float>(FOV * M_PI / 180.0f)),
 _translate(1.0f),
 _rotate(1.0f),
 _mouseStates(3, MouseClickState()),
@@ -83,7 +88,7 @@ bool Model::init(const std::string& mesh_filename)
 		return false;
 	}
 
-	// Create mesh vertices
+	// Create mesh vertices and bounding box
 	const float max_float = std::numeric_limits<float>::max();
 	Mesh::Point lowerLeft(max_float, max_float, max_float);
 	Mesh::Point upperRight(-max_float, -max_float, -max_float);
@@ -107,6 +112,7 @@ bool Model::init(const std::string& mesh_filename)
 	}
 	center /= (double)_mesh.n_vertices();
 
+	// Iter faces and add to element list
 	for (Mesh::FaceIter iter = _mesh.faces_begin();
 		 iter != _mesh.faces_end();
 		 ++iter)
@@ -138,7 +144,6 @@ bool Model::init(const std::string& mesh_filename)
 		arc_vertices[4*i + 2] = -1;
 		arc_vertices[4*i + 3] = 1;
 	}
-
 
 	// Create the objects' Vertex Array Object:
 	glGenVertexArrays(2, _vao);
@@ -191,6 +196,7 @@ void Model::draw()
 		// Cannot draw before we know the screen size
 		return;
 	}
+
 	// Set the program to be used in subsequent lines:
 	GLuint program = programManager::sharedInstance().programWithID("default");
 	glUseProgram(program);
@@ -199,12 +205,14 @@ void Model::draw()
 
 	glUniformMatrix4fv(_modelUV, 1, GL_FALSE, glm::value_ptr(_model));
 
+	// View matrix: rotate, then translate (so rotation axis is preserved)
 	glm::mat4 view = _mouseStates[GLUT_RIGHT_BUTTON]._transform * _translate *
 			 _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
 
 	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(view));
 
-	// Perspective
+	// Perspective matrix: either projection, or orthogonal.
+	// FOV changes according to mouse zoom.
 	float fov = _fov + _fovChange;
 	float zNear = OBJECT_DEPTH - OBJECT_B_RAD;
 	float zFar = OBJECT_DEPTH + OBJECT_B_RAD;
@@ -221,6 +229,7 @@ void Model::draw()
 								 offsetFromCenter, 
 								 zNear, zFar);
 	}
+
 	// Manually fix aspect ratio so it will behave the same for perspective and ortho 
 	// (and conform with school solution)
 	_projection = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, _width / _height, 1.0f)) * _projection;
@@ -320,8 +329,8 @@ void Model::mouse_move(int x, int y)
 								  0));
 				break;
 			case GLUT_MIDDLE_BUTTON:
-				_fovChange = std::max(-_fov + 0.1f,
-						std::min(static_cast<float>(M_PI - _fov - 0.35f),
+				_fovChange = std::max(-_fov + MIN_FOV,
+						std::min(static_cast<float>(MAX_FOV - _fov),
 								mouseLocation.y - state._initialMouseLocation.y));
 				break;
 			case GLUT_LEFT_BUTTON:
@@ -341,7 +350,7 @@ void Model::mouse_move(int x, int y)
 
 void Model::reset()
 {
-	_fov = static_cast<float>(30.0f * M_PI / 180.0f);
+	_fov = static_cast<float>(FOV * M_PI / 180.0f);
 	_translate = glm::mat4(1.0f);
 	_rotate = glm::mat4(1.0f);
 }
