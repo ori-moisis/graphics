@@ -2,7 +2,6 @@
 200170694 orensam
 
 === Files ===
-ex2.h                     - Main program header file
 ex2.cpp                   - Main program
 Model.h                   - Header file for the Model class
 Model.cpp                 - All OpenGL code for drawing a circle
@@ -11,6 +10,7 @@ shaders/SimpleShader.vert - A shader that applies the current transformation
 shaders/SimpleShader.frag - A shader that colors a fragment according to the interpolated values.
 ShaderIO.h                - Header file for the programManager class
 ShaderIO.cpp              - OpenGL Shader interfacing code
+Makefile				  - Compiles the program 
 Readme.txt                - This file
 
 
