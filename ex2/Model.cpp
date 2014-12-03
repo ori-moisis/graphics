@@ -232,7 +232,11 @@ void Model::draw()
 
 	// Manually fix aspect ratio so it will behave the same for perspective and ortho 
 	// (and conform with school solution)
-	_projection = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, _width / _height, 1.0f)) * _projection;
+	glm::mat4 aspect = glm::scale(glm::mat4(1.0f),
+								  glm::vec3(std::max(1.0f, _height / _width),
+										  	std::max(1.0f, _width / _height),
+										  	1.0f));
+	_projection = aspect * _projection;
 	// Move the object to the required depth as the last step before projection so the object
 	// depth won't be affected by any other transformation
 	_projection = _projection * glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-OBJECT_DEPTH));
@@ -249,8 +253,7 @@ void Model::draw()
 	glUniform1i(_isArcballUV, 1);
 	glUniformMatrix4fv(_modelUV, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
 	glUniformMatrix4fv(_viewUV, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
-	glUniformMatrix4fv(_projectionUV, 1, GL_FALSE,
-			glm::value_ptr(glm::scale(glm::mat4(1.0f), glm::vec3(1, _width / _height, 1))));
+	glUniformMatrix4fv(_projectionUV, 1, GL_FALSE, glm::value_ptr(aspect));
 
 	glDrawArrays(GL_LINE_LOOP, 0, ARCBALL_VERTICES);
 	glBindVertexArray(0);
@@ -268,8 +271,8 @@ void Model::resize(int width, int height)
 glm::vec3 Model::get_normalized_location(int x, int y)
 {
 	glm::vec3 point(0,0,0);
-	point.x = ((2*x / _width) - 1);
-	point.y = ((_height - 2*y) / _height);
+	point.x = ((2*x / _width) - 1) / std::max(1.0f, _height / _width);
+	point.y = ((_height - 2*y) / _height) / std::max(1.0f, _width / _height);
 	float zSqr = pow(ARCBALL_RAD,2) - pow(point.x,2) - pow(point.y, 2);
 	if (zSqr > 0)
 	{
