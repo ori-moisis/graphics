@@ -66,18 +66,28 @@ bool Model::init(const std::string& mesh_filename)
 	glEnable(GL_DEPTH_TEST);
 
 	programManager::sharedInstance()
-	.createProgram("arcball",
-				   SHADERS_DIR "Arcball.vert",
-				   SHADERS_DIR "SimpleShader.frag");
+			.createProgram("phong",
+						   SHADERS_DIR "SimpleShader.vert",
+						   SHADERS_DIR "SimpleShader.frag");
+
+	programManager::sharedInstance()
+			.createProgram("gouraud",
+						   SHADERS_DIR "GouraudShader.vert",
+						   SHADERS_DIR "SimpleShader.frag");
 
 	programManager::sharedInstance()
 		.createProgram("default",
 					   SHADERS_DIR "SimpleShader.vert",
 					   SHADERS_DIR "SimpleShader.frag");
 
+	programManager::sharedInstance()
+		.createProgram("arcball",
+					   SHADERS_DIR "Arcball.vert",
+					   SHADERS_DIR "SimpleShader.frag");
 
-	_programs[0] = programManager::sharedInstance().programWithID("default");
-	_programs[1] = programManager::sharedInstance().programWithID("default");
+
+	_programs[0] = programManager::sharedInstance().programWithID("phong");
+	_programs[1] = programManager::sharedInstance().programWithID("gouraud");
 	_programs[2] = programManager::sharedInstance().programWithID("default");
 	_programs[3] = programManager::sharedInstance().programWithID("arcball");
 
@@ -89,6 +99,10 @@ bool Model::init(const std::string& mesh_filename)
 		_modelUV[i] = glGetUniformLocation(_programs[i], "model");
 		_viewUV[i] = glGetUniformLocation(_programs[i], "view");
 		_projectionUV[i] = glGetUniformLocation(_programs[i], "projection");
+		if (i < 2)
+		{
+			_shininess[i] = glGetUniformLocation(_programs[i], "shininess");
+		}
 	}
 
 	// Load mesh

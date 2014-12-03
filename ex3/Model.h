@@ -30,14 +30,12 @@ class Model {
 	GLuint _vbo[2];
 
 	GLuint _programs[4];
-
-	// Attribute handles:
-	GLint _posAttrib;
 	
 	// Uniform handles:
 	GLint _modelUV[4];
 	GLint _viewUV[4];
 	GLint _projectionUV[4];
+	GLint _shininess[2];
 	
 	// View port frame:
 	float _width, _height;
