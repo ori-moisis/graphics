@@ -25,9 +25,31 @@
 typedef OpenMesh::PolyMesh_ArrayKernelT<> Mesh;
 
 class Model {
+public:
+	enum ProjectionMode
+	{
+		PERSPECTIVE = 0,
+		ORTHO = 1
+	};
+
+	enum LightingMode
+	{
+		PHONG = 0,
+		GOURAUD = 1,
+		COLORFUL = 2,
+		ARCBALL = 3,
+	};
+
+	enum NormalMode
+	{
+		BASIC = 0,
+		ADVANCED = 1,
+	};
+
+private:
 	
-	GLuint _vao[2];
-	GLuint _vbo[2];
+	GLuint _vao[3];
+	GLuint _vbo[3];
 
 	GLuint _programs[4];
 	
@@ -35,7 +57,7 @@ class Model {
 	GLint _modelUV[4];
 	GLint _viewUV[4];
 	GLint _projectionUV[4];
-	GLint _shininess[2];
+	GLint _shininessUV[2];
 	
 	// View port frame:
 	float _width, _height;
@@ -57,6 +79,7 @@ class Model {
 	glm::mat4 _rotate;
 
 	float _fovChange;
+	int _shininess;
 
 	struct MouseClickState
 	{
@@ -68,22 +91,10 @@ class Model {
 
 	std::vector<MouseClickState> _mouseStates;
 
-	enum ProjectionMode
-	{
-		PERSPECTIVE = 0,
-		ORTHO = 1
-	};
-
-	enum LightingMode
-	{
-		PHONG = 0,
-		GOURAUD = 1,
-		COLORFUL = 2,
-		ARCBALL = 3,
-	};
 
 	ProjectionMode _projectionMode;
 	LightingMode _lightingMode;
+	NormalMode _normalMode;
 
 public:
 	Model();
@@ -107,6 +118,12 @@ public:
 	void switchPolygonMode();
 
 	void switchPerspective();
+
+	void switchNormalMode();
+
+	void setLightingMode(LightingMode newMode);
+
+	void addShininess(int val);
 
 };
 

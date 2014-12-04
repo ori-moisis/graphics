@@ -44,9 +44,12 @@ _polygonMode(GL_FILL),
 _fov(static_cast<float>(FOV * M_PI / 180.0f)),
 _translate(1.0f),
 _rotate(1.0f),
+_fovChange(0.0f),
+_shininess(200),
 _mouseStates(3, MouseClickState()),
 _projectionMode (PERSPECTIVE),
-_lightingMode (COLORFUL)
+_lightingMode (COLORFUL),
+_normalMode (BASIC)
 {
 	memset(_vao, 0, sizeof(_vao));
 	memset(_vbo, 0, sizeof(_vbo));
@@ -55,9 +58,9 @@ _lightingMode (COLORFUL)
 Model::~Model()
 {
 	if (_vao[0] != 0)
-		glDeleteVertexArrays(2, _vao);
+		glDeleteVertexArrays(3, _vao);
 	if (_vbo[0] != 0)
-		glDeleteBuffers(2, _vbo);
+		glDeleteBuffers(3, _vbo);
 }
 
 bool Model::init(const std::string& mesh_filename)
@@ -101,15 +104,26 @@ bool Model::init(const std::string& mesh_filename)
 		_projectionUV[i] = glGetUniformLocation(_programs[i], "projection");
 		if (i < 2)
 		{
-			_shininess[i] = glGetUniformLocation(_programs[i], "shininess");
+			_shininessUV[i] = glGetUniformLocation(_programs[i], "shininess");
 		}
 	}
 
 	// Load mesh
-	if (!OpenMesh::IO::read_mesh(_mesh, mesh_filename.c_str()))
+	_mesh.request_vertex_normals();
+	_mesh.request_face_normals();
+	OpenMesh::IO::Options read_options;
+	if (!OpenMesh::IO::read_mesh(_mesh, mesh_filename.c_str(), read_options))
 	{
 		// if we didn't make it, exit...
 		return false;
+	}
+	if (! read_options.check(OpenMesh::IO::Options::VertexNormal))
+	{
+		_mesh.update_vertex_normals();
+	}
+	if (! read_options.check(OpenMesh::IO::Options::FaceNormal))
+	{
+		_mesh.update_face_normals();
 	}
 
 	// Create mesh vertices and bounding box
@@ -118,7 +132,8 @@ bool Model::init(const std::string& mesh_filename)
 	Mesh::Point upperRight(-max_float, -max_float, -max_float);
 	Mesh::Point center(0,0,0);
 
-	float* mesh_vertices = new float[_mesh.n_vertices() * 4];
+	std::vector<float> mesh_one_normal_per_vertex;
+	mesh_one_normal_per_vertex.reserve(_mesh.n_vertices() * 8);
 	int i = 0;
 	for (Mesh::VertexIter iter = _mesh.vertices_begin();
 		 iter != _mesh.vertices_end();
@@ -128,23 +143,47 @@ bool Model::init(const std::string& mesh_filename)
 		center += p;
 		for (int j = 0; j < 3; ++j)
 		{
-			mesh_vertices[4*i + j] = p[j];
+			mesh_one_normal_per_vertex.push_back(p[j]);
 			lowerLeft[j] = fmin(lowerLeft[j], p[j]);
 			upperRight[j] = fmax(upperRight[j], p[j]);
 		}
-		mesh_vertices[4*i + 3] = 1;
+		mesh_one_normal_per_vertex.push_back(1);
+
+		Mesh::Normal norm =_mesh.calc_vertex_normal(iter);
+		for (int j = 0; j < 3; ++j)
+		{
+			mesh_one_normal_per_vertex.push_back(norm[j]);
+		}
+		mesh_one_normal_per_vertex.push_back(0);
 	}
 	center /= (double)_mesh.n_vertices();
 
 	// Iter faces and add to element list
+	std::vector<float> mesh_one_normal_per_face;
+	mesh_one_normal_per_face.reserve(_mesh.n_faces() * 3 * 8);
 	for (Mesh::FaceIter iter = _mesh.faces_begin();
 		 iter != _mesh.faces_end();
 		 ++iter)
 	{
+		Mesh::Normal norm = _mesh.calc_face_normal(*iter);
+
 		Mesh::FaceVertexIter end_iter = _mesh.fv_end(*iter);
 		for (Mesh::FaceVertexIter v_iter = _mesh.fv_begin(*iter); v_iter != end_iter; ++v_iter)
 		{
 			_elementIndices.push_back(v_iter.handle().idx());
+
+			Mesh::Point p = _mesh.point(v_iter.handle());
+			for (int j = 0; j < 3; ++j)
+			{
+				mesh_one_normal_per_face.push_back(p[j]);
+			}
+			mesh_one_normal_per_face.push_back(1);
+
+			for (int j = 0; j < 3; ++j)
+			{
+				mesh_one_normal_per_face.push_back(norm[j]);
+			}
+			mesh_one_normal_per_face.push_back(0);
 		}
 	}
 
@@ -170,35 +209,75 @@ bool Model::init(const std::string& mesh_filename)
 	}
 
 	// Create the objects' Vertex Array Object:
-	glGenVertexArrays(2, _vao);
-	glGenBuffers(2, _vbo);
+	glGenVertexArrays(3, _vao);
+	glGenBuffers(3, _vbo);
 
-	// Create and bind the mesh VAO
+	// Create and bind the mesh VAO with one normal per vertex
 	glBindVertexArray(_vao[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
 
 	for (int i = 0; i < 4; ++i)
 	{
-		GLint posAttrib = glGetAttribLocation(_programs[2], "position");
+		GLint posAttrib = glGetAttribLocation(_programs[i], "position");
 		glEnableVertexAttribArray(posAttrib);
 		glVertexAttribPointer(posAttrib, // attribute handle
 							  4,          // number of scalars per vertex
 							  GL_FLOAT,   // scalar type
 							  GL_FALSE,
-							  0,
+							  sizeof(glm::vec4)*2,
 							  0);
+
+		GLint normalAttrib = glGetAttribLocation(_programs[i], "normal");
+		glEnableVertexAttribArray(normalAttrib);
+		glVertexAttribPointer(normalAttrib, // attribute handle
+							  4,            // number of scalars per vertex
+							  GL_FLOAT,     // scalar type
+							  GL_FALSE,
+							  sizeof(glm::vec4)*2,
+							  (GLvoid*)(sizeof(glm::vec4)));
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, _mesh.n_vertices() * 4 * sizeof(float), mesh_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, mesh_one_normal_per_vertex.size() * sizeof(float), &mesh_one_normal_per_vertex[0], GL_STATIC_DRAW);
+
+
+    // Create and bind the mesh VAO with one normal per face
+	glBindVertexArray(_vao[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		GLint posAttrib = glGetAttribLocation(_programs[i], "position");
+		glEnableVertexAttribArray(posAttrib);
+		glVertexAttribPointer(posAttrib, // attribute handle
+							  4,          // number of scalars per vertex
+							  GL_FLOAT,   // scalar type
+							  GL_FALSE,
+							  sizeof(glm::vec4)*2,
+							  0);
+
+		GLint normalAttrib = glGetAttribLocation(_programs[i], "normal");
+		glEnableVertexAttribArray(normalAttrib);
+		glVertexAttribPointer(normalAttrib, // attribute handle
+							  4,            // number of scalars per vertex
+							  GL_FLOAT,     // scalar type
+							  GL_FALSE,
+							  sizeof(glm::vec4)*2,
+							  (GLvoid*)(sizeof(glm::vec4)));
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+	glBufferData(GL_ARRAY_BUFFER, mesh_one_normal_per_face.size() * sizeof(float), &mesh_one_normal_per_face[0], GL_STATIC_DRAW);
+
+
 
    	// Bind arcball vertex array
-   	glBindVertexArray(_vao[1]);
-   	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+   	glBindVertexArray(_vao[2]);
+   	glBindBuffer(GL_ARRAY_BUFFER, _vbo[2]);
 
    	for (int i = 0; i < 4; ++i)
 	{
-		GLint posAttrib = glGetAttribLocation(_programs[2], "position");
+		GLint posAttrib = glGetAttribLocation(_programs[i], "position");
 		glEnableVertexAttribArray(posAttrib);
 		glVertexAttribPointer(posAttrib, // attribute handle
 							  4,          // number of scalars per vertex
@@ -208,13 +287,12 @@ bool Model::init(const std::string& mesh_filename)
 							  0);
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, ARCBALL_VERTICES * 4 * sizeof(float), arc_vertices, GL_STATIC_DRAW);
 
 	// Unbind vertex array:
 	glBindVertexArray(0);
 
-    delete [] mesh_vertices;
     delete [] arc_vertices;
 
 	return true;
@@ -229,7 +307,6 @@ void Model::draw()
 	}
 
 	// Set the program to be used in subsequent lines:
-
 	glUseProgram(_programs[_lightingMode]);
 
 	glPolygonMode(GL_FRONT_AND_BACK, _polygonMode);
@@ -274,13 +351,25 @@ void Model::draw()
 
 	glUniformMatrix4fv(_projectionUV[_lightingMode], 1, GL_FALSE, glm::value_ptr(_projection));
 
-	// Draw using the state stored in the Vertex Array object:
-	glBindVertexArray(_vao[0]);
-	glDrawElements(GL_TRIANGLES, _elementIndices.size(), GL_UNSIGNED_INT, &_elementIndices[0]);
+	if (_lightingMode == PHONG || _lightingMode == GOURAUD) {
+		glUniform1i(_shininessUV[_lightingMode], _shininess);
+	}
+
+	switch (_normalMode)
+	{
+	case BASIC:
+		glBindVertexArray(_vao[1]);
+		glDrawArrays(GL_TRIANGLES, 0, _mesh.n_faces() * 3);
+		break;
+	case ADVANCED:
+		glBindVertexArray(_vao[0]);
+		glDrawElements(GL_TRIANGLES, _elementIndices.size(), GL_UNSIGNED_INT, &_elementIndices[0]);
+		break;
+	}
 
 	// Draw arcball circle
 	glUseProgram(_programs[ARCBALL]);
-	glBindVertexArray(_vao[1]);
+	glBindVertexArray(_vao[2]);
 	glUniformMatrix4fv(_projectionUV[ARCBALL], 1, GL_FALSE, glm::value_ptr(aspect));
 
 	glDrawArrays(GL_LINE_LOOP, 0, ARCBALL_VERTICES);
@@ -384,6 +473,7 @@ void Model::reset()
 	_fov = static_cast<float>(FOV * M_PI / 180.0f);
 	_translate = glm::mat4(1.0f);
 	_rotate = glm::mat4(1.0f);
+	_shininess = 200;
 }
 
 void Model::switchPolygonMode()
@@ -394,6 +484,21 @@ void Model::switchPolygonMode()
 void Model::switchPerspective()
 {
 	_projectionMode = (_projectionMode == PERSPECTIVE) ? ORTHO : PERSPECTIVE;
+}
+
+void Model::switchNormalMode()
+{
+	_normalMode = (_normalMode == BASIC) ? ADVANCED : BASIC;
+}
+
+void Model::setLightingMode(Model::LightingMode newMode)
+{
+	_lightingMode = newMode;
+}
+
+void Model::addShininess(int val)
+{
+	_shininess = std::min(2000, std::max(_shininess + val, 0));
 }
 
 Model::MouseClickState::MouseClickState() :

@@ -38,6 +38,12 @@
 #define KEY_RELOAD          ('l') // Key used to reload the shaders 	      //
 #define KEY_WIREFRAME       ('w') // Key used to toggle wireframe rendering   //
 #define KEY_PERSPECTIVE     ('p') // Key used to toggle perspective           //
+#define KEY_NORMAL          ('n') // Key used to toggle normal mode           //
+#define KEY_PHONG           ('1') // Key used to set lighting to phong        //
+#define KEY_GOURAUD         ('2') // Key used to set lighting to gouraud      //
+#define KEY_COLORFUL        ('3') // Key used to set lighting to colorful     //
+#define KEY_MORE_SHININESS  ('=') // Key used to increase shininess           //
+#define KEY_LESS_SHININESS  ('-') // Key used to decrease shininess           //
 
 /** display callback */
 void display(void);
@@ -203,6 +209,24 @@ void keyboard(unsigned char key, int x, int y)
         case KEY_PERSPECTIVE:
         	_model.switchPerspective();
         	break;
+        case KEY_NORMAL:
+        	_model.switchNormalMode();
+        	break;
+        case KEY_PHONG:
+        	_model.setLightingMode(Model::PHONG);
+        	break;
+        case KEY_GOURAUD:
+        	_model.setLightingMode(Model::GOURAUD);
+        	break;
+        case KEY_COLORFUL:
+        	_model.setLightingMode(Model::COLORFUL);
+        	break;
+        case KEY_MORE_SHININESS:
+        	_model.addShininess(1);
+        	break;
+        case KEY_LESS_SHININESS:
+			_model.addShininess(-1);
+			break;
         case KEY_QUIT:
         case KEY_ESC:
             // Terminate the program:
