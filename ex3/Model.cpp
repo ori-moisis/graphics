@@ -70,8 +70,8 @@ bool Model::init(const std::string& mesh_filename)
 
 	programManager::sharedInstance()
 			.createProgram("phong",
-						   SHADERS_DIR "SimpleShader.vert",
-						   SHADERS_DIR "SimpleShader.frag");
+						   SHADERS_DIR "Phong.vert",
+						   SHADERS_DIR "Phong.frag");
 
 	programManager::sharedInstance()
 			.createProgram("gouraud",
@@ -149,7 +149,7 @@ bool Model::init(const std::string& mesh_filename)
 		}
 		mesh_one_normal_per_vertex.push_back(1);
 
-		Mesh::Normal norm =_mesh.calc_vertex_normal(iter);
+		Mesh::Normal norm = _mesh.calc_vertex_normal(iter);
 		for (int j = 0; j < 3; ++j)
 		{
 			mesh_one_normal_per_vertex.push_back(norm[j]);

@@ -1,15 +1,12 @@
 #version 330
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
 uniform int shininess;
 
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec4 normal;
+in vec4 interNormal;
+in vec4 interPos;
 
-out vec4 color;
+layout(pixel_center_integer) in vec4 gl_FragCoord;
+out vec4 outColor;
 
 void main()
 {
@@ -23,13 +20,10 @@ void main()
 	vec3 ka = vec3(0.1, 0.1, 0.1); // Ambient coefficient
 	vec3 kd = vec3(0.3, 0.3, 0.3); // Diffuse coefficient
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
-
-
-	gl_Position = projection * view * model * position;
 	
-	vec4 posForLight = view * model * position;	
-	vec4 normalForLight = normalize(view * model * normal);
-	vec3 v = normalize(posForLight.xyz - vec3(0,0,7.6));
+	vec4 posForLight = interPos;	
+	vec4 normalForLight = interNormal;
+	vec3 v = normalize(vec3(0,0,7.6) - posForLight.xyz);
 	
 	float d1 = distance(lightPosition1, posForLight.xyz);
 	float d2 = distance(lightPosition2, posForLight.xyz);
@@ -44,15 +38,14 @@ void main()
 	vec3 l2 = normalize(lightPosition2 - posForLight.xyz);
 	vec3 r1 = normalize(reflect(l1, normalForLight.xyz));
 	vec3 r2 = normalize(reflect(l2, normalForLight.xyz));
-	
-	posForLight = normalize(posForLight);
+
 	
 	vec3 color1 = (kd * lightColor1 * max(0, dot(l1, normalForLight.xyz))) / d1factor;
-	color1 += (ks * lightColor1 * pow(max(0, dot(v, r1)), shininess)) / d1factor;
+	color1 += (ks * lightColor1 * max(0,pow(dot(v, r1), shininess))) / d1factor;
 	
 	vec3 color2 = (kd * lightColor2 * max(0, dot(l2, normalForLight.xyz))) / d2factor;
-	color2 += (ks * lightColor2 * pow(max(0, dot(v, r2)), shininess)) / d2factor;
+	color2 += (ks * lightColor2 * max(0,pow(dot(v, r2), shininess))) / d2factor;
 	
-	color.xyz = color1 + color2 + ka * ambientColor;
-	color.w = 0;
+	outColor.xyz = color1 + color2 + ka * ambientColor;
+	outColor.w = 0;
 }
