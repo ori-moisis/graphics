@@ -2,55 +2,54 @@
 200170694 orensam
 
 === Files ===
-ex2.cpp                   - Main program
-Model.h                   - Header file for the Model class
-Model.cpp                 - All OpenGL code for drawing a circle
-shaders/SimpleShader.vert - A shader that applies the current transformation
-							and chooses the vertex color.
-shaders/SimpleShader.frag - A shader that colors a fragment according to the interpolated values.
-ShaderIO.h                - Header file for the programManager class
-ShaderIO.cpp              - OpenGL Shader interfacing code
-Makefile				  - Compiles the program 
-Readme.txt                - This file
+ex3.cpp                    - Main program
+Model.h                    - Header file for the Model class
+Model.cpp                  - All OpenGL code
+shaders/Arcball.vert       - A shader for the arcball - uniform color and only apply scale 
+                             transformation
+shaders/SimpleShader.vert  - A shader that applies the current transformation
+							 and chooses the vertex color according to position.
+shaders/SimpleShader.frag  - A shader that colors a fragment according to the interpolated values.
+shaders/GouraudShader.vert - Shader that chooses vertex color according to Gouraud shading
+shaders/Phong.vert         - Shader that applies the current transformation on vertex positions
+                             and passes them along with the normal to the fragment shader
+shaders/Phong.frag         - Shader that chooses fragment color according to Phong shading using
+                             the position and normal interpolated from the phong vertex shader
+ShaderIO.h                 - Header file for the programManager class
+ShaderIO.cpp               - OpenGL Shader interfacing code
+Makefile				   - Compiles the program 
+Readme.txt                 - This file
 
 
 === Implementation notes ===
-In this exercise, we display a given OpenMesh mesh using the tools OpenGL provides us,
-and allow the user to perform transformations on the model using the keyboard and mouse.
+We have 3 different VAO/VBOs:
+1. The arcball vertices
+2. The mesh vertices and normals with each vertex appearing once
+3. The mesh vertices and normals with each vertex appearing multiple times (one for every face
+   the vertex is a part of)
 
-When the mesh is read, we calculate the bounding box and center of the given model, 
-and use these parameters in order to create the model transformation, which normalizes the model
-such that its longest dimension is stretched or compressed to span [-1, 1].
+The reason for having two VAO/VBOs for the mesh is to minimize the amount of data being transferred
+in large meshes: if we only had one VAO/VBO for the mesh, we would have to pass both the basic
+and advanced normals for each vertex. 
+since each vertex usually appears in more than 2 faces, this would mean passing the same advanced
+normal multiple times.
+By using two separate VAO/VBOs we allow the advanced normal mode to pass each normal just once
+and thus pass less data between our application and the shader.
 
-Upon loading the mesh, we iterate the model's faces and create element indices to be used with
-glDrawElements.
+We have 4 OpenGL programs:
+  Program    |  Vertex shader     | Fragment shader
+---------------------------------------------------
+1. Phong     | Phong.vert         | Phong.frag
+2. Gouraud   | GouraudShader.vert | SimpleShader.frag
+3. Colorful  | SimpleShader.vert  | SimpleShader.frag
+4. Arcball   | Arcball.vert       | SimpleShader.frag
 
-We use two separate VAOs/VBOs: One for the displayed model, and another for the arcball, which
-is represented on the screen simply as a red circle surrounding the model's initial location.
+Note that the gouraud vertex shader and the phong fragment shader perform pretty much the same
+calculation, the only difference is the phong shader does so with interpolated normals at each
+pixel and the gouraud shader does so only for each vertex.
 
-The model's colors are chosen in the vertex shader, according to its initial normalized 
-coordinates. The fragments are then colored by an interpolation of the colors chosen for 
-the surrounding vertices.
 
-Two additional important transformations which we apply to our model are 
-the view and projection transformations.
-
-The view matrix is responsible for the rotation and translation of the model
-(in accordance with the user's mouse input). This matrix is calculated each time 
-in the draw() function, according to the most recent values available. 
-
-The projection matrix is responsible for the perspective and zoom. It too must be calculated
-in each draw(), since it is calculated according to the current zoom level, and is then 
-combined with the current projection type (either perspective or orthogonal)
-
-The matrices are applied to the model, in the vertex shader, in the following order:
-Model (stretches the model and puts the center at (0,0,0))
-View (First rotates the model around (0,0,0) - i.e the new model center, and then translates 
-the model to the requested location)
-Projection (Applies the current projection (perspective/ortho) to the model)    
-  
-
-=== Configuration variables === 
+=== Configuration variables (same as ex2) === 
 
 1. ARCBALL_VERTICES = 100
 Number of vertices in the arcball
@@ -70,10 +69,3 @@ Initial field of view (degrees)
 6. MIN_FOV = 0.1
 7. MAX_FOV = M_PI - 0.35
 FOV limits (radians)
-
-
-=== Data flow between host and shaders ===
-In each draw iteration the host sets the following uniform variables for the shaders:
-
-1. Current model, view, projection matrices.
-2. A boolean denoting whether the current vertex belongs to the model or the arcball.

@@ -317,6 +317,10 @@ void Model::draw()
 	glm::mat4 view = _mouseStates[GLUT_RIGHT_BUTTON]._transform * _translate *
 			 _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
 
+	// Move the object to the required depth as the last step before projection so the object
+	// depth won't be affected by any other transformation
+	view = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-OBJECT_DEPTH)) * view;
+
 	glUniformMatrix4fv(_viewUV[_lightingMode], 1, GL_FALSE, glm::value_ptr(view));
 
 	// Perspective matrix: either projection, or orthogonal.
@@ -345,9 +349,6 @@ void Model::draw()
 										  	std::max(1.0f, _width / _height),
 										  	1.0f));
 	_projection = aspect * _projection;
-	// Move the object to the required depth as the last step before projection so the object
-	// depth won't be affected by any other transformation
-	_projection = _projection * glm::translate(glm::mat4(1.0f), glm::vec3(0,0,-OBJECT_DEPTH));
 
 	glUniformMatrix4fv(_projectionUV[_lightingMode], 1, GL_FALSE, glm::value_ptr(_projection));
 

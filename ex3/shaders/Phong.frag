@@ -14,8 +14,8 @@ void main()
 	vec3 lightColor2 = vec3(0.6, 0.6, 1.0); // Second light color
 	vec3 ambientColor = vec3(1.0, 1.0, 1.0); // Ambient light color
 	
-	vec3 lightPosition1 = vec3(  3.0, 2.0,  8.6); // First light position
-	vec3 lightPosition2 = vec3( -3.0, 0.0,  8.6); // Second light position
+	vec3 lightPosition1 = vec3(  3.0, 2.0,  1.0); // First light position
+	vec3 lightPosition2 = vec3( -3.0, 0.0,  1.0); // Second light position
 	
 	vec3 ka = vec3(0.1, 0.1, 0.1); // Ambient coefficient
 	vec3 kd = vec3(0.3, 0.3, 0.3); // Diffuse coefficient
@@ -23,7 +23,7 @@ void main()
 	
 	vec4 posForLight = interPos;
 	vec4 normalForLight = interNormal;
-	vec3 v = normalize(posForLight.xyz - vec3(0,0,7.6));
+	vec3 v = normalize(posForLight.xyz);
 	
 	float d1 = distance(lightPosition1, posForLight.xyz);
 	float d2 = distance(lightPosition2, posForLight.xyz);
