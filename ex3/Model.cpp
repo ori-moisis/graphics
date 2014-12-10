@@ -48,8 +48,8 @@ _fovChange(0.0f),
 _shininess(200),
 _mouseStates(3, MouseClickState()),
 _projectionMode (PERSPECTIVE),
-_lightingMode (COLORFUL),
-_normalMode (BASIC)
+_lightingMode (PHONG),
+_normalMode (ADVANCED)
 {
 	memset(_vao, 0, sizeof(_vao));
 	memset(_vbo, 0, sizeof(_vbo));

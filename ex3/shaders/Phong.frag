@@ -21,9 +21,9 @@ void main()
 	vec3 kd = vec3(0.3, 0.3, 0.3); // Diffuse coefficient
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
 	
-	vec4 posForLight = interPos;	
+	vec4 posForLight = interPos;
 	vec4 normalForLight = interNormal;
-	vec3 v = normalize(posForLight.xyz - vec3(0,0,0));
+	vec3 v = normalize(posForLight.xyz - vec3(0,0,7.6));
 	
 	float d1 = distance(lightPosition1, posForLight.xyz);
 	float d2 = distance(lightPosition2, posForLight.xyz);
