@@ -41,10 +41,10 @@ void main()
 
 	
 	vec3 color1 = (kd * lightColor1 * max(0, dot(l1, normalForLight.xyz))) / d1factor;
-	color1 += (ks * lightColor1 * pow(dot(v, r1), shininess)) / d1factor;
+	color1 += (ks * lightColor1 * pow(max(0, dot(v, r1)), shininess)) / d1factor;
 	
 	vec3 color2 = (kd * lightColor2 * max(0, dot(l2, normalForLight.xyz))) / d2factor;
-	color2 += (ks * lightColor2 * max(0,pow(dot(v, r2), shininess))) / d2factor;
+	color2 += (ks * lightColor2 * max(0,pow(max(0, dot(v, r2)), shininess))) / d2factor;
 	
 	outColor.xyz = color1 + color2 + ka * ambientColor;
 }

@@ -34,7 +34,7 @@ void main()
 	float d1 = distance(lightPosition1, posForLight.xyz);
 	float d2 = distance(lightPosition2, posForLight.xyz);
 	float a = 0.0;
-	float b = 0.0;
+	float b = 0.02;
 	float c = 0.01;
 	float d1factor = max(0.1, a + b*d1 + c*pow(d1,2));
 	float d2factor = max(0.1, a + b*d2 + c*pow(d2,2));
@@ -46,10 +46,12 @@ void main()
 	
 	
 	vec3 color1 = (kd * lightColor1 * max(0, dot(l1, normalForLight.xyz))) / d1factor;
-	color1 += (ks * lightColor1 * pow(dot(v, r1), shininess)) / d1factor;
+	color1 += (ks * lightColor1 * pow(max(0, dot(v, r1)), shininess)) / d1factor;
 	
 	vec3 color2 = (kd * lightColor2 * max(0, dot(l2, normalForLight.xyz))) / d2factor;
-	color2 += (ks * lightColor2 * max(0,pow(dot(v, r2), shininess))) / d2factor;
+	color2 += (ks * lightColor2 * pow(max(0, dot(v, r2)), shininess)) / d2factor;
 	
-	color.xyz = color1 + color2 + ka * ambientColor;
+	vec3 color3 = ka * ambientColor;
+	
+	color.xyz = color1 + color2 + color3;
 }
