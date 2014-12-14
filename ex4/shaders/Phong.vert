@@ -14,5 +14,5 @@ void main()
 {
     gl_Position = projection * view * model * position;
     interNormal = normalize(view * model * normal);
-    interPos = view * model * position;
+    interPos = position;
 }
