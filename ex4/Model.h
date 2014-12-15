@@ -58,6 +58,8 @@ private:
 	GLint _viewUV[4];
 	GLint _projectionUV[4];
 	GLint _shininessUV[2];
+	GLint _texScaleUV;
+	GLint _turbCoeffUV;
 	
 	// View port frame:
 	float _width, _height;
@@ -80,6 +82,8 @@ private:
 
 	float _fovChange;
 	int _shininess;
+	int _texScale;
+	int _turbCoeff;
 
 	struct MouseClickState
 	{
@@ -124,6 +128,10 @@ public:
 	void setLightingMode(LightingMode newMode);
 
 	void addShininess(int val);
+
+	void addTexScale(int val);
+
+	void addTurbCoeff(int val);
 
 };
 

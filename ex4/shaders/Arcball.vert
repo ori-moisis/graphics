@@ -2,7 +2,7 @@
 
 uniform mat4 projection;
 
-layout(location = 0) in vec4 position;
+in vec4 position;
 
 out vec4 color;
 

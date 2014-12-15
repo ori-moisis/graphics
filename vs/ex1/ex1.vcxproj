@@ -11,24 +11,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\ex2\.cproject" />
-    <None Include="..\..\ex2\.project" />
-    <None Include="..\..\ex2\Makefile" />
+    <ClCompile Include="..\..\ex4\ex4.cpp" />
+    <ClCompile Include="..\..\ex4\Model.cpp" />
+    <ClCompile Include="..\..\ex4\ShaderIO.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ex2\ex2.cpp" />
-    <ClCompile Include="..\..\ex2\Model.cpp" />
-    <ClCompile Include="..\..\ex2\ShaderIO.cpp" />
+    <ClInclude Include="..\..\ex4\Model.h" />
+    <ClInclude Include="..\..\ex4\ShaderIO.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ex2\Model.h" />
-    <ClInclude Include="..\..\ex2\ShaderIO.h" />
+    <None Include="..\..\ex4\shaders\Arcball.vert" />
+    <None Include="..\..\ex4\shaders\GouraudShader.vert" />
+    <None Include="..\..\ex4\shaders\Phong.frag" />
+    <None Include="..\..\ex4\shaders\Phong.vert" />
+    <None Include="..\..\ex4\shaders\SimpleShader.frag" />
+    <None Include="..\..\ex4\shaders\SimpleShader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6E68FB85-B60F-4839-AE6B-E28C02B5FCBD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ex1</RootNamespace>
-    <ProjectName>ex2</ProjectName>
+    <ProjectName>ex4</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -75,6 +78,9 @@
       <AdditionalLibraryDirectories>C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\lib\lib;C:\Program Files %28x86%29\OpenMesh 3.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32d.lib;OpenMeshCored.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /y C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\ex\graphics\$(ProjectName)\shaders $(OutDir)\shaders</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -95,6 +101,9 @@
       <AdditionalLibraryDirectories>C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\lib\lib;C:\Program Files %28x86%29\OpenMesh 3.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32d.lib;OpenMeshCored.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /y C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\ex\graphics\$(ProjectName)\shaders $(OutDir)\shaders</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

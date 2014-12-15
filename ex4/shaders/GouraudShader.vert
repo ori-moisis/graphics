@@ -6,8 +6,8 @@ uniform mat4 projection;
 
 uniform int shininess;
 
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec4 normal;
+in vec4 position;
+in vec4 normal;
 
 out vec4 color;
 

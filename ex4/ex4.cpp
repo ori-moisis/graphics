@@ -44,6 +44,10 @@
 #define KEY_COLORFUL        ('3') // Key used to set lighting to colorful     //
 #define KEY_MORE_SHININESS  ('=') // Key used to increase shininess           //
 #define KEY_LESS_SHININESS  ('-') // Key used to decrease shininess           //
+#define KEY_LESS_TEX_SCALE  ('s') // Key used to decrease texture scale       //
+#define KEY_MORE_TEX_SCALE  ('d') // Key used to increase texture scale       //
+#define KEY_LESS_TURB       ('f') // Key used to decrease turbulance magnitude//
+#define KEY_MORE_TURB       ('g') // Key used to increase turbulance magnitude//
 
 /** display callback */
 void display(void);
@@ -83,7 +87,7 @@ int main(int argc, char* argv[])
 	}
 	std::string mesh_filename = argv[1];
 
-	std::cout << "Starting ex2..." << std::endl;
+	std::cout << "Starting ex4..." << std::endl;
 	
 	// Initialize GLUT
     glutInit(&argc, argv) ;
@@ -103,7 +107,7 @@ int main(int argc, char* argv[])
 
     glutInitWindowSize(WINDOW_SIZE, WINDOW_SIZE);
     glutInitWindowPosition(WINDOW_POS_X, WINDOW_POS_Y);
-    glutCreateWindow("CG Ex2");
+    glutCreateWindow("CG Ex4");
 	
 	// Initialize GLEW
     glewExperimental = GL_TRUE;
@@ -226,6 +230,18 @@ void keyboard(unsigned char key, int x, int y)
         	break;
         case KEY_LESS_SHININESS:
 			_model.addShininess(-1);
+			break;
+		case KEY_MORE_TEX_SCALE:
+			_model.addTexScale(1);
+			break;
+		case KEY_LESS_TEX_SCALE:
+			_model.addTexScale(-1);
+			break;
+		case KEY_MORE_TURB:
+			_model.addTurbCoeff(1);
+			break;
+		case KEY_LESS_TURB:
+			_model.addTurbCoeff(-1);
 			break;
         case KEY_QUIT:
         case KEY_ESC:

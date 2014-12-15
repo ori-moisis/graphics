@@ -3,6 +3,8 @@
 uniform mat4 model;
 uniform mat4 view;
 uniform int shininess;
+uniform int texScale;
+uniform int turbCoeff;
 
 in vec4 interNormal;
 in vec4 interPos;
@@ -133,6 +135,7 @@ float turb(vec3 v)
 
 void main()
 {
+	float pi = 3.141592653589793;
 	vec3 lightColor1 = vec3(1.0, 0.9, 0.7); // First light color
 	vec3 lightColor2 = vec3(0.6, 0.6, 1.0); // Second light color
 	vec3 ambientColor = vec3(1.0, 1.0, 1.0); // Ambient light color
@@ -145,7 +148,7 @@ void main()
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
 	
 	vec4 texPos = model * interPos;
-	kd = vec3((sin(10 * 3.141592653589793 * texPos.x + 100 * turb(texPos.zyx)) + 1) / 2);
+	kd = vec3((sin((2 * pi * ((texPos.x+1)/2) * texScale) + (turbCoeff * turb(texPos.zyx))) + 1) / 2);
 	
 	vec4 posForLight = view * model * interPos;
 	vec4 normalForLight = interNormal;

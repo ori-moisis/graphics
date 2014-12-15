@@ -13,29 +13,47 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{a10e102f-5357-4f2c-8388-ec820babc05b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\ex2\.cproject" />
-    <None Include="..\..\ex2\.project" />
-    <None Include="..\..\ex2\Makefile" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\ex2\ex2.cpp">
+    <ClCompile Include="..\..\ex4\ex4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ex2\Model.cpp">
+    <ClCompile Include="..\..\ex4\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\ex2\ShaderIO.cpp">
+    <ClCompile Include="..\..\ex4\ShaderIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ex2\Model.h">
+    <ClInclude Include="..\..\ex4\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ex2\ShaderIO.h">
+    <ClInclude Include="..\..\ex4\ShaderIO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\ex4\shaders\Arcball.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\ex4\shaders\GouraudShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\ex4\shaders\Phong.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\ex4\shaders\Phong.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\ex4\shaders\SimpleShader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\..\ex4\shaders\SimpleShader.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

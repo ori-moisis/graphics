@@ -49,7 +49,9 @@ _shininess(200),
 _mouseStates(3, MouseClickState()),
 _projectionMode (PERSPECTIVE),
 _lightingMode (PHONG),
-_normalMode (ADVANCED)
+_normalMode (ADVANCED),
+_texScale(1),
+_turbCoeff(0)
 {
 	memset(_vao, 0, sizeof(_vao));
 	memset(_vbo, 0, sizeof(_vbo));
@@ -105,6 +107,11 @@ bool Model::init(const std::string& mesh_filename)
 		if (i < 2)
 		{
 			_shininessUV[i] = glGetUniformLocation(_programs[i], "shininess");
+		}
+		if (i == PHONG)
+		{
+			_texScaleUV = glGetUniformLocation(_programs[i], "texScale");
+			_turbCoeffUV = glGetUniformLocation(_programs[i], "turbCoeff");
 		}
 	}
 
@@ -355,6 +362,10 @@ void Model::draw()
 	if (_lightingMode == PHONG || _lightingMode == GOURAUD) {
 		glUniform1i(_shininessUV[_lightingMode], _shininess);
 	}
+	if (_lightingMode == PHONG) {
+		glUniform1i(_texScaleUV, _texScale);
+		glUniform1i(_turbCoeffUV, _turbCoeff);
+	}
 
 	switch (_normalMode)
 	{
@@ -500,6 +511,16 @@ void Model::setLightingMode(Model::LightingMode newMode)
 void Model::addShininess(int val)
 {
 	_shininess = std::min(2000, std::max(_shininess + val, 0));
+}
+
+void Model::addTexScale(int val)
+{
+	_texScale = std::min(100, std::max(0, _texScale + val));
+}
+
+void Model::addTurbCoeff(int val)
+{
+	_turbCoeff = std::min(100, std::max(0, _turbCoeff + val));
 }
 
 Model::MouseClickState::MouseClickState() :
