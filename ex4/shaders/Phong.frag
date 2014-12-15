@@ -148,7 +148,7 @@ void main()
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
 	
 	vec4 texPos = model * interPos;
-	kd = vec3((sin((2 * pi * ((texPos.x+1)/2) * texScale) + (turbCoeff * turb(texPos.zyx))) + 1) / 2);
+	kd = vec3((sin((2 * pi * ((texPos.x + 1) / 2 + turb(turbCoeff * texPos.zyx)) * texScale)) + 1) / 2);
 	
 	vec4 posForLight = view * model * interPos;
 	vec4 normalForLight = interNormal;
