@@ -143,69 +143,69 @@ void main()
 	vec3 lightColor2 = vec3(0.6, 0.6, 1.0); // Second light color
 	vec3 ambientColor = vec3(1.0, 1.0, 1.0); // Ambient light color
 	
-	vec3 lightPosition1 = vec3(  3.0, 2.0,  1.0); // First light position
-	vec3 lightPosition2 = vec3( -3.0, 0.0,  1.0); // Second light position
+	vec3 lightPosition1 = vec3(  3.0, 2.0,  1.0 + 7.6); // First light position
+	vec3 lightPosition2 = vec3( -3.0, 0.0,  1.0 + 7.6); // Second light position
 	
 	vec3 ka = vec3(0.1, 0.1, 0.1); // Ambient coefficient
 	vec3 kd = vec3(0.3, 0.3, 0.3); // Diffuse coefficient
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
-	vec3 textureColor = vec3(0);
+	vec3 textureColor = vec3(0.0);
 	
-	vec3 darkWood = vec3(0.2f, 0.1f, 0.02f);
-	vec3 lightWood = vec3(0.5f, 0.3f, 0.12f);
+	vec3 darkWood = vec3(0.2, 0.1, 0.02);
+	vec3 lightWood = vec3(0.5, 0.3, 0.12);
 	
 	vec4 texPos = model * interPos;
-	vec4 posForLight = view * model * interPos;
-	vec4 normalForLight = interNormal;
-	vec3 v = normalize(posForLight.xyz);
 	
-	float d1 = distance(lightPosition1, posForLight.xyz);
-	float d2 = distance(lightPosition2, posForLight.xyz);
-	float a = 0.0;
-	float b = 0.0;
-	float c = 0.01;
-	float d1factor = max(0.1, a + b*d1 + c*pow(d1,2));
-	float d2factor = max(0.1, a + b*d2 + c*pow(d2,2));
+	vec3 posForLight = (view * model * interPos).xyz;
+	posForLight.z = posForLight.z + 7.6;
 	
-
-	vec3 l1 = normalize(lightPosition1 - posForLight.xyz);
-	vec3 l2 = normalize(lightPosition2 - posForLight.xyz);
-	vec3 r1 = normalize(reflect(normalForLight.xyz, l1));
-	vec3 r2 = normalize(reflect(normalForLight.xyz, l2));
-	
+	vec3 normalForLight = normalize(interNormal.xyz);
+	vec3 v = normalize(-posForLight.xyz);
 	
 	if (texMode == 1) {
-		float sinParam = texScale * (texPos.x + turb((turbCoeff / 10.0) * (texPos.zyx + 1)));
-		float bla = sin(pi * (sinParam + 1));
+		float sinParam = texScale * (texPos.x + turb((turbCoeff / 10.0) * (texPos.zyx + 1.0)));
+		float bla = sin(pi * (sinParam + 1.0));
 		float kdVal = bla * bla * bla;
-		kd = vec3((kdVal + 0.5) / 2);
+		kd = vec3((kdVal + 0.5) / 2.0);
 	} else if (texMode == 2) {
-		texPos = texPos + 1;
-		float d = texScale * sqrt(texPos.y * texPos.y + texPos.z * texPos.z) + (turbCoeff / 10.0f) * turb(texPos.zyx);		
-		float cosParam = 2 * pi * (d - floor(d));
+		texPos = texPos + 1.0;
+		float d = texScale * length(texPos.yz) + (turbCoeff / 10.0) * turb(texPos.zyx);		
+		float cosParam = 2.0 * pi * (d - floor(d));
 		float woodParam = abs(cos(cosParam));
 		kd = mix(darkWood, lightWood, woodParam);
-		ks = vec3(0);
+		ks = vec3(0.0);
 	} else if (texMode == 3) {
-		vec4 vReflect = reflect(normalForLight, normalize(posForLight));
+		vec3 vReflect = normalize(reflect(v, normalForLight));
 		
 		float theta = atan(vReflect.x, vReflect.z);
 		float phi = atan(vReflect.y, length(vReflect.xz));
 		
-		float texU = (theta + pi) / (2*pi) + 0.5;
-		texU = texU - floor(texU);
+		float texU = (theta + pi) / (2*pi);
 		float texV = (phi + (pi/2)) / pi;
 		
-		textureColor = texture(myTexture, vec2(texU,1-texV)).xyz;
-		kd = vec3(0);
-		ks = vec3(0);
+		textureColor = texture(myTexture, vec2(texU, 1.0 - texV)).xyz;
+		kd = vec3(0.0);
+		ks = vec3(0.0);
 	}
 	
-	vec3 color1 = (kd * lightColor1 * max(0, dot(l1, normalForLight.xyz))) / d1factor;
-	color1 += (ks * lightColor1 * pow(max(0, dot(v, r1)), shininess)) / d1factor;
+	float d1 = distance(lightPosition1, posForLight.xyz);
+	float d2 = distance(lightPosition2, posForLight.xyz);
+	float a = 1.0;
+	float b = 0.0;
+	float c = 0.0;
+	float d1factor = max(0.1, a + b*d1 + c*pow(d1,2));
+	float d2factor = max(0.1, a + b*d2 + c*pow(d2,2));
 	
-	vec3 color2 = (kd * lightColor2 * max(0, dot(l2, normalForLight.xyz))) / d2factor;
-	color2 += (ks * lightColor2 * pow(max(0, dot(v, r2)), shininess)) / d2factor;
+	vec3 l1 = normalize(lightPosition1 - posForLight);
+	vec3 l2 = normalize(lightPosition2 - posForLight);
+	vec3 r1 = normalize(reflect(l1, normalForLight));
+	vec3 r2 = normalize(reflect(l2, normalForLight));
+	
+	vec3 color1 = (kd * lightColor1 * max(0.0, dot(l1, normalForLight))) / d1factor;
+	color1 += (ks * lightColor1 * pow(max(0.0, dot(v, r1)), shininess)) / d1factor;
+	
+	vec3 color2 = (kd * lightColor2 * max(0.0, dot(l2, normalForLight))) / d2factor;
+	color2 += (ks * lightColor2 * pow(max(0.0, dot(v, r2)), shininess)) / d2factor;
 	
 	outColor.xyz = color1 + color2 + ka * ambientColor + textureColor;
 }

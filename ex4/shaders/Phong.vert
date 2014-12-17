@@ -13,6 +13,6 @@ out vec4 interPos;
 void main()
 {
     gl_Position = projection * view * model * position;
-    interNormal = normalize(view * model * normal);
+    interNormal = view * model * normal;
     interPos = position;
 }
