@@ -518,12 +518,12 @@ void Model::addShininess(int val)
 
 void Model::addTexScale(int val)
 {
-	_texScale = std::min(100, std::max(1, _texScale + val));
+	_texScale = std::min(INT_MAX, std::max(1, _texScale + val));
 }
 
 void Model::addTurbCoeff(int val)
 {
-	_turbCoeff = std::min(100, std::max(0, _turbCoeff + val));
+	_turbCoeff = std::min(INT_MAX, std::max(0, _turbCoeff + val));
 }
 
 void Model::toggleTexMode()
