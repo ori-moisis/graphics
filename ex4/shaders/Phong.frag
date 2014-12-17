@@ -7,6 +7,8 @@ uniform int texScale;
 uniform int turbCoeff;
 uniform int texMode;
 
+uniform sampler2D myTexture;
+
 in vec4 interNormal;
 in vec4 interPos;
 
@@ -152,23 +154,6 @@ void main()
 	vec3 lightWood = vec3(0.5f, 0.3f, 0.12f);
 	
 	vec4 texPos = model * interPos;
-	
-	if (texMode == 1) {
-		float sinParam = texScale * (texPos.x + turb((turbCoeff / 10.0) * (texPos.zyx + 1)));
-		float bla = sin(pi * (sinParam + 1));
-		float kdVal = bla * bla * bla;
-		kd = vec3((kdVal + 0.5) / 2);
-	}
-	
-	if (texMode == 2) {
-		texPos = texPos + 1;
-		float d = texScale * sqrt(texPos.y * texPos.y + texPos.z * texPos.z) + (turbCoeff / 10.0f) * turb(texPos.zyx);		
-		float cosParam = 2 * pi * (d - floor(d));
-		float woodParam = abs(cos(cosParam));
-		kd = mix(darkWood, lightWood, woodParam);
-		ks = vec3(0);
-	}
-	
 	vec4 posForLight = view * model * interPos;
 	vec4 normalForLight = interNormal;
 	vec3 v = normalize(posForLight.xyz);
@@ -186,7 +171,35 @@ void main()
 	vec3 l2 = normalize(lightPosition2 - posForLight.xyz);
 	vec3 r1 = normalize(reflect(normalForLight.xyz, l1));
 	vec3 r2 = normalize(reflect(normalForLight.xyz, l2));
-
+	
+	
+	if (texMode == 1) {
+		float sinParam = texScale * (texPos.x + turb((turbCoeff / 10.0) * (texPos.zyx + 1)));
+		float bla = sin(pi * (sinParam + 1));
+		float kdVal = bla * bla * bla;
+		kd = vec3((kdVal + 0.5) / 2);
+	}
+	if (texMode == 2) {
+		texPos = texPos + 1;
+		float d = texScale * sqrt(texPos.y * texPos.y + texPos.z * texPos.z) + (turbCoeff / 10.0f) * turb(texPos.zyx);		
+		float cosParam = 2 * pi * (d - floor(d));
+		float woodParam = abs(cos(cosParam));
+		kd = mix(darkWood, lightWood, woodParam);
+		ks = vec3(0);
+	}
+	if (texMode == 3) {
+		// Find the reflect direction
+		vec4 vReflect = normalize(reflect(posForLight, normalForLight));
+		float theta = (atan(vReflect.x, vReflect.z)) / pi;
+		float phi = (atan(vReflect.y, sqrt((vReflect.x * vReflect.x) + (vReflect.z * vReflect.z)))) * 2 / pi;
+		
+		
+		outColor.xyz = vec3(vReflect.x / vReflect.z);
+		
+		//outColor = vec4((theta + 1) / 2);
+		//outColor = texture(myTexture, vec2(theta, phi));
+		return;
+	}
 	
 	vec3 color1 = (kd * lightColor1 * max(0, dot(l1, normalForLight.xyz))) / d1factor;
 	color1 += (ks * lightColor1 * pow(max(0, dot(v, r1)), shininess)) / d1factor;

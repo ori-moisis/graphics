@@ -21,7 +21,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "glm/gtc/matrix_transform.hpp"
 
+#include <bimage.h>
+
 #define SHADERS_DIR "shaders/"
+#define TEXTURE_DIR "textures/"
+#define MIRROR_TEX_FILE "spheremap2.bmp"
 
 // Number of vertices in the arcball
 static const int ARCBALL_VERTICES = 100;
@@ -114,6 +118,7 @@ bool Model::init(const std::string& mesh_filename)
 			_texScaleUV = glGetUniformLocation(_programs[i], "texScale");
 			_turbCoeffUV = glGetUniformLocation(_programs[i], "turbCoeff");
 			_texModeUV = glGetUniformLocation(_programs[i], "texMode");
+			_textureUV = glGetUniformLocation(_programs[i], "myTexture");
 		}
 	}
 
@@ -304,6 +309,32 @@ bool Model::init(const std::string& mesh_filename)
 
     delete [] arc_vertices;
 
+
+    // Load textures
+    {
+    	BImage image(TEXTURE_DIR MIRROR_TEX_FILE);
+
+    	glGenTextures(1, &_mirrorTexUV);
+    	glBindTexture(GL_TEXTURE_2D, _mirrorTexUV);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glTexImage2D(GL_TEXTURE_2D,
+        		     0 /* level */,
+        		     GL_RGBA /* internalformat */,
+        		     image.width(),
+        		     image.height(),
+        		     0 /* border*/,
+        		     GL_RGB /* format */,
+        		     GL_UNSIGNED_BYTE /* type */,
+        		     image.getImageData());
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
 	return true;
 }
 
@@ -368,6 +399,11 @@ void Model::draw()
 		glUniform1i(_texScaleUV, _texScale);
 		glUniform1i(_turbCoeffUV, _turbCoeff);
 		glUniform1i(_texModeUV, _texMode);
+		if (_texMode == MIRROR) {
+			glUniform1i(_textureUV, 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, _mirrorTexUV);
+		}
 	}
 
 	switch (_normalMode)

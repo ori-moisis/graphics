@@ -72,7 +72,11 @@ private:
 	GLint _texScaleUV;
 	GLint _turbCoeffUV;
 	GLint _texModeUV;
+	GLint _textureUV;
 	
+	// Texture handles
+	GLuint _mirrorTexUV;
+
 	// View port frame:
 	float _width, _height;
 

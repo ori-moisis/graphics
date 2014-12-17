@@ -9,12 +9,16 @@
 #
 ##################################################################
 
-# OpenMesh defs
 CG_HOME = /cs/course/2013/cg
+
+# OpenMesh defs
 OM_DIR = $(CG_HOME)/OpenMesh
 OM_LIBS = -L$(OM_DIR)/lib -lOpenMeshCore
 OM_INCLUDE=  -I$(OM_DIR)/include
 
+# Bimage defs
+BI_INCLUDE = -I$(CG_HOME)/bimage
+BI_LIBS = -L$(CG_HOME)/bimage -lbimage
 
 EXEC = 
 
@@ -26,7 +30,7 @@ SRCS	=  	ex4.cpp		\
 # compiler 
 CC	= g++
 
-INCLUDE = -I/usr/include -I/usr/X11R6/include -I/cs/course/current/cg/include $(OM_INCLUDE)
+INCLUDE = -I/usr/include -I/usr/X11R6/include -I$(CG_HOME)/include $(BI_INCLUDE) $(OM_INCLUDE)
 
 OBJS = $(subst .cpp,.o,$(SRCS)) 		#substituting .cc -> .o
 
@@ -61,7 +65,7 @@ LDFLAGS	=
 APP = ex4
 
 # each lib should add with -l flag
-LIBS =  -L/usr/lib -lm -lGLEW -lglut -lGL -lGLU -ldl -L/usr/X11R6/lib $(OM_LIBS)
+LIBS =  -L/usr/lib -lm -lGLEW -lglut -lGL -lGLU -ldl -L/usr/X11R6/lib $(BI_LIBS) $(OM_LIBS)
 
 
 # rule to change the suffix of the sources files
