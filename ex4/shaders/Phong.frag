@@ -5,6 +5,7 @@ uniform mat4 view;
 uniform int shininess;
 uniform int texScale;
 uniform int turbCoeff;
+uniform int texMode;
 
 in vec4 interNormal;
 in vec4 interPos;
@@ -148,7 +149,13 @@ void main()
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
 	
 	vec4 texPos = model * interPos;
-	kd = vec3((sin((2 * pi * ((texPos.x + 1) / 2 + turb((turbCoeff / 10.0) * (texPos.zyx + 1))) * texScale)) + 1) / 2);
+	
+	if (texMode == 1) {
+		float sinParam = texScale * (texPos.x + turb((turbCoeff / 10.0) * (texPos.zyx + 1)));
+		float bla = sin(pi * (sinParam + 1));
+		float kdVal = bla * bla * bla;
+		kd = vec3((kdVal + 0.5) / 2);
+	}
 	
 	vec4 posForLight = view * model * interPos;
 	vec4 normalForLight = interNormal;
@@ -157,8 +164,8 @@ void main()
 	float d1 = distance(lightPosition1, posForLight.xyz);
 	float d2 = distance(lightPosition2, posForLight.xyz);
 	float a = 0.0;
-	float b = 0.03;
-	float c = 0.03;
+	float b = 0.0;
+	float c = 0.01;
 	float d1factor = max(0.1, a + b*d1 + c*pow(d1,2));
 	float d2factor = max(0.1, a + b*d2 + c*pow(d2,2));
 	

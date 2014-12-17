@@ -48,6 +48,7 @@
 #define KEY_MORE_TEX_SCALE  ('d') // Key used to increase texture scale       //
 #define KEY_LESS_TURB       ('f') // Key used to decrease turbulance magnitude//
 #define KEY_MORE_TURB       ('g') // Key used to increase turbulance magnitude//
+#define KEY_TOGGLE_TEX      ('t') // Key used to toggle tex mode              //
 
 /** display callback */
 void display(void);
@@ -242,6 +243,9 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		case KEY_LESS_TURB:
 			_model.addTurbCoeff(-1);
+			break;
+		case KEY_TOGGLE_TEX:
+			_model.toggleTexMode();
 			break;
         case KEY_QUIT:
         case KEY_ESC:

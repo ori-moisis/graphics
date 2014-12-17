@@ -46,12 +46,13 @@ _translate(1.0f),
 _rotate(1.0f),
 _fovChange(0.0f),
 _shininess(200),
+_texScale(1),
+_turbCoeff(0),
+_texMode(NONE),
 _mouseStates(3, MouseClickState()),
 _projectionMode (PERSPECTIVE),
 _lightingMode (PHONG),
-_normalMode (ADVANCED),
-_texScale(1),
-_turbCoeff(0)
+_normalMode (ADVANCED)
 {
 	memset(_vao, 0, sizeof(_vao));
 	memset(_vbo, 0, sizeof(_vbo));
@@ -112,6 +113,7 @@ bool Model::init(const std::string& mesh_filename)
 		{
 			_texScaleUV = glGetUniformLocation(_programs[i], "texScale");
 			_turbCoeffUV = glGetUniformLocation(_programs[i], "turbCoeff");
+			_texModeUV = glGetUniformLocation(_programs[i], "texMode");
 		}
 	}
 
@@ -322,7 +324,7 @@ void Model::draw()
 
 	// View matrix: rotate, then translate (so rotation axis is preserved)
 	glm::mat4 view = _mouseStates[GLUT_RIGHT_BUTTON]._transform * _translate *
-			 _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
+			 	 	 _mouseStates[GLUT_LEFT_BUTTON]._transform * _rotate;
 
 	// Move the object to the required depth as the last step before projection so the object
 	// depth won't be affected by any other transformation
@@ -365,6 +367,7 @@ void Model::draw()
 	if (_lightingMode == PHONG) {
 		glUniform1i(_texScaleUV, _texScale);
 		glUniform1i(_turbCoeffUV, _turbCoeff);
+		glUniform1i(_texModeUV, _texMode);
 	}
 
 	switch (_normalMode)
@@ -515,12 +518,17 @@ void Model::addShininess(int val)
 
 void Model::addTexScale(int val)
 {
-	_texScale = std::min(100, std::max(0, _texScale + val));
+	_texScale = std::min(100, std::max(1, _texScale + val));
 }
 
 void Model::addTurbCoeff(int val)
 {
 	_turbCoeff = std::min(100, std::max(0, _turbCoeff + val));
+}
+
+void Model::toggleTexMode()
+{
+	_texMode = static_cast<TexMode>((_texMode + 1) % NUM_TEX_MODES);
 }
 
 Model::MouseClickState::MouseClickState() :

@@ -46,6 +46,17 @@ public:
 		ADVANCED = 1,
 	};
 
+	enum TexMode
+	{
+		NONE = 0,
+		MARBLE = 1,
+		WOOD = 2,
+		MIRROR = 3,
+		BUMP = 4,
+
+		NUM_TEX_MODES
+	};
+
 private:
 	
 	GLuint _vao[3];
@@ -60,6 +71,7 @@ private:
 	GLint _shininessUV[2];
 	GLint _texScaleUV;
 	GLint _turbCoeffUV;
+	GLint _texModeUV;
 	
 	// View port frame:
 	float _width, _height;
@@ -84,6 +96,8 @@ private:
 	int _shininess;
 	int _texScale;
 	int _turbCoeff;
+	TexMode _texMode;
+
 
 	struct MouseClickState
 	{
@@ -132,6 +146,8 @@ public:
 	void addTexScale(int val);
 
 	void addTurbCoeff(int val);
+
+	void toggleTexMode();
 
 };
 
