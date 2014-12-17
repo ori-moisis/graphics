@@ -148,6 +148,9 @@ void main()
 	vec3 kd = vec3(0.3, 0.3, 0.3); // Diffuse coefficient
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
 	
+	vec3 darkWood = vec3(0.2f, 0.1f, 0.02f);
+	vec3 lightWood = vec3(0.5f, 0.3f, 0.12f);
+	
 	vec4 texPos = model * interPos;
 	
 	if (texMode == 1) {
@@ -155,6 +158,15 @@ void main()
 		float bla = sin(pi * (sinParam + 1));
 		float kdVal = bla * bla * bla;
 		kd = vec3((kdVal + 0.5) / 2);
+	}
+	
+	if (texMode == 2) {
+		texPos = texPos + 1;
+		float d = texScale * sqrt(texPos.y * texPos.y + texPos.z * texPos.z) + (turbCoeff / 10.0f) * turb(texPos.zyx);		
+		float cosParam = 2 * pi * (d - floor(d));
+		float woodParam = abs(cos(cosParam));
+		kd = mix(darkWood, lightWood, woodParam);
+		ks = vec3(0);
 	}
 	
 	vec4 posForLight = view * model * interPos;
