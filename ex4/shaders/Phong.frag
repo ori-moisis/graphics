@@ -149,6 +149,7 @@ void main()
 	vec3 ka = vec3(0.1, 0.1, 0.1); // Ambient coefficient
 	vec3 kd = vec3(0.3, 0.3, 0.3); // Diffuse coefficient
 	vec3 ks = vec3(0.3, 0.3, 0.3); // Specular coefficient
+	vec3 textureColor = vec3(0);
 	
 	vec3 darkWood = vec3(0.2f, 0.1f, 0.02f);
 	vec3 lightWood = vec3(0.5f, 0.3f, 0.12f);
@@ -178,27 +179,26 @@ void main()
 		float bla = sin(pi * (sinParam + 1));
 		float kdVal = bla * bla * bla;
 		kd = vec3((kdVal + 0.5) / 2);
-	}
-	if (texMode == 2) {
+	} else if (texMode == 2) {
 		texPos = texPos + 1;
 		float d = texScale * sqrt(texPos.y * texPos.y + texPos.z * texPos.z) + (turbCoeff / 10.0f) * turb(texPos.zyx);		
 		float cosParam = 2 * pi * (d - floor(d));
 		float woodParam = abs(cos(cosParam));
 		kd = mix(darkWood, lightWood, woodParam);
 		ks = vec3(0);
-	}
-	if (texMode == 3) {
-		// Find the reflect direction
-		vec4 vReflect = normalize(reflect(posForLight, normalForLight));
-		float theta = (atan(vReflect.x, vReflect.z)) / pi;
-		float phi = (atan(vReflect.y, sqrt((vReflect.x * vReflect.x) + (vReflect.z * vReflect.z)))) * 2 / pi;
+	} else if (texMode == 3) {
+		vec4 vReflect = reflect(normalForLight, normalize(posForLight));
 		
+		float theta = atan(vReflect.x, vReflect.z);
+		float phi = atan(vReflect.y, length(vReflect.xz));
 		
-		outColor.xyz = vec3(vReflect.x / vReflect.z);
+		float texU = (theta + pi) / (2*pi) + 0.5;
+		texU = texU - floor(texU);
+		float texV = (phi + (pi/2)) / pi;
 		
-		//outColor = vec4((theta + 1) / 2);
-		//outColor = texture(myTexture, vec2(theta, phi));
-		return;
+		textureColor = texture(myTexture, vec2(texU,1-texV)).xyz;
+		kd = vec3(0);
+		ks = vec3(0);
 	}
 	
 	vec3 color1 = (kd * lightColor1 * max(0, dot(l1, normalForLight.xyz))) / d1factor;
@@ -207,5 +207,5 @@ void main()
 	vec3 color2 = (kd * lightColor2 * max(0, dot(l2, normalForLight.xyz))) / d2factor;
 	color2 += (ks * lightColor2 * pow(max(0, dot(v, r2)), shininess)) / d2factor;
 	
-	outColor.xyz = color1 + color2 + ka * ambientColor;
+	outColor.xyz = color1 + color2 + ka * ambientColor + textureColor;
 }
