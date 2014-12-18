@@ -157,10 +157,9 @@ void main()
 	vec4 texPos = model * interPos;
 	
 	vec3 posForLight = (view * model * interPos).xyz;
-	posForLight.z = posForLight.z + 7.6;
 	
 	vec3 normalForLight = normalize(interNormal.xyz);
-	vec3 v = normalize(-posForLight.xyz);
+	vec3 v = normalize(-(posForLight + vec3(0,0,7.6)));
 	
 	if (texMode == 1) {
 		float sinParam = texScale * (texPos.x + turb((turbCoeff / 10.0) * (texPos.zyx + 1.0)));
@@ -175,7 +174,7 @@ void main()
 		kd = mix(darkWood, lightWood, woodParam);
 		ks = vec3(0.0);
 	} else if (texMode == 3) {
-		vec3 vReflect = normalize(reflect(v, normalForLight));
+		vec3 vReflect = normalize(reflect(posForLight, normalForLight));
 		
 		float theta = atan(vReflect.x, vReflect.z);
 		float phi = atan(vReflect.y, length(vReflect.xz));
