@@ -152,17 +152,17 @@ void main()
 	vec3 lightWood = vec3(0.5, 0.3, 0.12);
 	
 	vec4 texPos = model * interPos;
-	
 	vec3 posForLight = (view * model * interPos).xyz;
-	
 	vec3 normalForLight = normalize(interNormal.xyz);
 	vec3 v = normalize(-(posForLight + vec3(0,0,7.6)));
 	
 	if (texMode == 1) {
 		float sinParam = texScale * (texPos.x + turb((turbCoeff / 10.0) * (texPos.zyx + 1.0)));
-		float bla = sin(pi * (sinParam + 1.0));
-		float kdVal = bla * bla * bla;
+		float sinRes = sin(pi * (sinParam + 1.0));
+		// Use sin^3 to get gray regions as well
+		float kdVal = sinRes * sinRes * sinRes;
 		kd = vec3((kdVal + 0.5) / 2.0);
+		
 	} else if (texMode == 2) {
 		texPos = texPos + 1.0;
 		float d = texScale * length(texPos.yz) + (turbCoeff / 10.0) * turb(texPos.zyx);		
@@ -170,23 +170,23 @@ void main()
 		float woodParam = abs(cos(cosParam));
 		kd = mix(darkWood, lightWood, woodParam);
 		ks = vec3(0.0);
+		
 	} else if (texMode == 3) {
 		vec3 vReflect = normalize(reflect(posForLight, normalForLight));
-		
 		float theta = atan(vReflect.x, vReflect.z);
 		float phi = atan(vReflect.y, length(vReflect.xz));
-		
 		float texU = (theta + pi) / (2*pi);
 		float texV = (phi + (pi/2)) / pi;
-		
 		textureColor = texture(myTexture, vec2(texU, 1.0 - texV)).xyz;
 		kd = vec3(0.0);
 		ks = vec3(0.0);
+		
 	} else if (texMode == 4) {
 		vec2 texCoord = (abs(texPos.x) > 0.999) ? texPos.zy : ((abs(texPos.y) > 0.999) ? texPos.xz : texPos.xy);
 		texCoord = texCoord / 2;
-		float dx = texture(myBumps, texCoord + vec2(0.001953125,0)).r - texture(myBumps, texCoord).r;
-		float dy = texture(myBumps, texCoord + vec2(0,0.001953125)).r - texture(myBumps, texCoord).r;
+		float textureUnit = 0.001953125; // (1 / 512)
+		float dx = texture(myBumps, texCoord + vec2(textureUnit,0)).r - texture(myBumps, texCoord).r;
+		float dy = texture(myBumps, texCoord + vec2(0,textureUnit)).r - texture(myBumps, texCoord).r;
 		vec3 normalDiff = texScale * vec3(dx, dy, 0);
 		normalForLight = normalize(normalForLight + normalDiff); 
 		kd = texture(myTexture, texCoord).xyz;

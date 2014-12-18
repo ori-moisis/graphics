@@ -2,7 +2,7 @@
 200170694 orensam
 
 === Files ===
-ex3.cpp                    - Main program
+ex4.cpp                    - Main program
 Model.h                    - Header file for the Model class
 Model.cpp                  - All OpenGL code
 shaders/Arcball.vert       - A shader for the arcball - uniform color and only apply scale 
@@ -14,7 +14,8 @@ shaders/GouraudShader.vert - Shader that chooses vertex color according to Goura
 shaders/Phong.vert         - Shader that applies the current transformation on vertex positions
                              and passes them along with the normal to the fragment shader
 shaders/Phong.frag         - Shader that chooses fragment color according to Phong shading using
-                             the position and normal interpolated from the phong vertex shader
+                             the position and normal interpolated from the phong vertex shader.
+                             Now with textures
 ShaderIO.h                 - Header file for the programManager class
 ShaderIO.cpp               - OpenGL Shader interfacing code
 Makefile				   - Compiles the program 
@@ -22,34 +23,25 @@ Readme.txt                 - This file
 
 
 === Implementation notes ===
-We have 3 different VAO/VBOs:
-1. The arcball vertices
-2. The mesh vertices and normals with each vertex appearing once
-3. The mesh vertices and normals with each vertex appearing multiple times (one for every face
-   the vertex is a part of)
+Changes to the host program:
+1. In the init method we now load the 3 texture files using the bimage library
+2. Added support for texture control keys
 
-The reason for having two VAO/VBOs for the mesh is to minimize the amount of data being transferred
-in large meshes: if we only had one VAO/VBO for the mesh, we would have to pass both the basic
-and advanced normals for each vertex. 
-since each vertex usually appears in more than 2 faces, this would mean passing the same advanced
-normal multiple times.
-By using two separate VAO/VBOs we allow the advanced normal mode to pass each normal just once
-and thus pass less data between our application and the shader.
+Changes to Phong.frag:
+1. Added a uniform variable that chooses the texture mode
+2. Added uniform variables for the texture/bump map/scale/turbulence coefficient
+3. Added the turbulence function as-is from the exercise definition.
 
-We have 4 OpenGL programs:
-  Program    |  Vertex shader     | Fragment shader
----------------------------------------------------
-1. Phong     | Phong.vert         | Phong.frag
-2. Gouraud   | GouraudShader.vert | SimpleShader.frag
-3. Colorful  | SimpleShader.vert  | SimpleShader.frag
-4. Arcball   | Arcball.vert       | SimpleShader.frag
-
-Note that the gouraud vertex shader and the phong fragment shader perform pretty much the same
-calculation, the only difference is the phong shader does so with interpolated normals at each
-pixel and the gouraud shader does so only for each vertex.
+Each texture mode may change the specular and/or diffuse coefficients to apply the texture to
+the object.
+There is also a new shading component called textureColor which the mirror texture uses in order
+to be independent of the light sources.
+Both marble and wood textures use the formulas given in the tirgul slides.
+One notable difference is that we used sin^3 instead of sin in the marble texture, this was done
+in order to have gray regions similarly to the school solution.
 
 
-=== Configuration variables (same as ex2) === 
+=== Configuration variables (same as ex3) === 
 
 1. ARCBALL_VERTICES = 100
 Number of vertices in the arcball
