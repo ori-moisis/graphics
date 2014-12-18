@@ -8,6 +8,7 @@ uniform int turbCoeff;
 uniform int texMode;
 
 uniform sampler2D myTexture;
+uniform sampler2D myBumps;
 
 in vec4 interNormal;
 in vec4 interPos;
@@ -132,10 +133,6 @@ float turb(vec3 v)
 	return intensity;
 }
 
-
-
-
-
 void main()
 {
 	float pi = 3.141592653589793;
@@ -185,26 +182,27 @@ void main()
 		textureColor = texture(myTexture, vec2(texU, 1.0 - texV)).xyz;
 		kd = vec3(0.0);
 		ks = vec3(0.0);
+	} else if (texMode == 4) {
+		vec2 texCoord = (abs(texPos.x) > 0.999) ? texPos.zy : ((abs(texPos.y) > 0.999) ? texPos.xz : texPos.xy);
+		texCoord = texCoord / 2;
+		float dx = texture(myBumps, texCoord + vec2(0.001953125,0)).r - texture(myBumps, texCoord).r;
+		float dy = texture(myBumps, texCoord + vec2(0,0.001953125)).r - texture(myBumps, texCoord).r;
+		vec3 normalDiff = texScale * vec3(dx, dy, 0);
+		normalForLight = normalize(normalForLight + normalDiff); 
+		kd = texture(myTexture, texCoord).xyz;
+		ks = vec3(0.0);
 	}
-	
-	float d1 = distance(lightPosition1, posForLight.xyz);
-	float d2 = distance(lightPosition2, posForLight.xyz);
-	float a = 1.0;
-	float b = 0.0;
-	float c = 0.0;
-	float d1factor = max(0.1, a + b*d1 + c*pow(d1,2));
-	float d2factor = max(0.1, a + b*d2 + c*pow(d2,2));
 	
 	vec3 l1 = normalize(lightPosition1 - posForLight);
 	vec3 l2 = normalize(lightPosition2 - posForLight);
 	vec3 r1 = normalize(reflect(l1, normalForLight));
 	vec3 r2 = normalize(reflect(l2, normalForLight));
 	
-	vec3 color1 = (kd * lightColor1 * max(0.0, dot(l1, normalForLight))) / d1factor;
-	color1 += (ks * lightColor1 * pow(max(0.0, dot(v, r1)), shininess)) / d1factor;
+	vec3 color1 = kd * lightColor1 * max(0.0, dot(l1, normalForLight));
+	color1 += ks * lightColor1 * pow(max(0.0, dot(v, r1)), shininess);
 	
-	vec3 color2 = (kd * lightColor2 * max(0.0, dot(l2, normalForLight))) / d2factor;
-	color2 += (ks * lightColor2 * pow(max(0.0, dot(v, r2)), shininess)) / d2factor;
+	vec3 color2 = kd * lightColor2 * max(0.0, dot(l2, normalForLight));
+	color2 += ks * lightColor2 * pow(max(0.0, dot(v, r2)), shininess);
 	
 	outColor.xyz = color1 + color2 + ka * ambientColor + textureColor;
 }

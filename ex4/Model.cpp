@@ -26,6 +26,8 @@
 #define SHADERS_DIR "shaders/"
 #define TEXTURE_DIR "textures/"
 #define MIRROR_TEX_FILE "spheremap2.bmp"
+#define BRICK_TEX_FILE "brickwork-texture.bmp"
+#define BRICK_BUMP_FILE "brickwork-bump-map.bmp"
 
 // Number of vertices in the arcball
 static const int ARCBALL_VERTICES = 100;
@@ -50,9 +52,9 @@ _translate(1.0f),
 _rotate(1.0f),
 _fovChange(0.0f),
 _shininess(200),
-_texScale(1),
-_turbCoeff(0),
-_texMode(NONE),
+_texScale(4),
+_turbCoeff(6),
+_texMode(MARBLE),
 _mouseStates(3, MouseClickState()),
 _projectionMode (PERSPECTIVE),
 _lightingMode (PHONG),
@@ -119,6 +121,7 @@ bool Model::init(const std::string& mesh_filename)
 			_turbCoeffUV = glGetUniformLocation(_programs[i], "turbCoeff");
 			_texModeUV = glGetUniformLocation(_programs[i], "texMode");
 			_textureUV = glGetUniformLocation(_programs[i], "myTexture");
+			_bumpsUV = glGetUniformLocation(_programs[i], "myBumps");
 		}
 	}
 
@@ -334,6 +337,52 @@ bool Model::init(const std::string& mesh_filename)
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+    {
+    	BImage image(TEXTURE_DIR BRICK_TEX_FILE);
+
+    	glGenTextures(1, &_bricksTexUV);
+    	glBindTexture(GL_TEXTURE_2D, _bricksTexUV);
+
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexImage2D(GL_TEXTURE_2D,
+					 0 /* level */,
+					 GL_RGBA /* internalformat */,
+					 image.width(),
+					 image.height(),
+					 0 /* border*/,
+					 GL_RGB /* format */,
+					 GL_UNSIGNED_BYTE /* type */,
+					 image.getImageData());
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    {
+		BImage image(TEXTURE_DIR BRICK_BUMP_FILE);
+
+		glGenTextures(1, &_bumpTexUV);
+		glBindTexture(GL_TEXTURE_2D, _bumpTexUV);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexImage2D(GL_TEXTURE_2D,
+					 0 /* level */,
+					 GL_RGBA /* internalformat */,
+					 image.width(),
+					 image.height(),
+					 0 /* border*/,
+					 GL_RGB /* format */,
+					 GL_UNSIGNED_BYTE /* type */,
+					 image.getImageData());
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 
 	return true;
 }
@@ -403,6 +452,13 @@ void Model::draw()
 			glUniform1i(_textureUV, 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, _mirrorTexUV);
+		} else if (_texMode == BUMP) {
+			glUniform1i(_textureUV, 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, _bricksTexUV);
+			glUniform1i(_bumpsUV, 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, _bumpTexUV);
 		}
 	}
 
@@ -525,6 +581,9 @@ void Model::reset()
 	_translate = glm::mat4(1.0f);
 	_rotate = glm::mat4(1.0f);
 	_shininess = 200;
+	_texMode = MARBLE;
+	_texScale = 4;
+	_turbCoeff = 6;
 }
 
 void Model::switchPolygonMode()
