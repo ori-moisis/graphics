@@ -15,8 +15,8 @@ Sphere::Sphere(Point3d C, double r)
 int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
 					  Vector3d& N, Color3d& texColor) {
 	Vector3d tmp = ray.O() - this->_C;
-	double b = 2 * OpenMesh::dot(ray._D(), tmp);
-	double a = OpenMesh::dot(ray._D(), ray._D());
+	double b = 2 * OpenMesh::dot(ray.D(), tmp);
+	double a = OpenMesh::dot(ray.D(), ray.D());
 	double c = OpenMesh::dot(tmp, tmp) - (this->_r * this->_r);
 	double disc = b*b - 4*a*c;
 	if (disc < 0) {
@@ -32,8 +32,8 @@ int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
 	}
 
 	t = minT;
-	P = ray._O() + t * ray._D();
-	N = P - this->_C();
+	P = ray.O() + t * ray.D();
+	N = P - this->_C;
 	N.normalize();
 	return 1;
 }

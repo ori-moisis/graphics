@@ -22,6 +22,7 @@ EXEC =
 SRCS	= bimage.cpp \
           object.cpp \
           sphere.cpp \
+          camera.cpp \
           ex5.cpp
 			
 # compiler 

@@ -10,6 +10,8 @@
 #ifndef __CAMERA__
 #define __CAMERA__
 
+#define GLM_FORCE_RADIANS
+#include "glm/glm.hpp"
 
 //////////////////////////////
 // Project Includes         //
@@ -50,6 +52,7 @@ private:
   Vector3d  _up;        // Vector pointing up                       //
   double    _fov_h;     // horizontal field of view for the camera  //
   size_t    _samples_per_pixel;
+  glm::mat4 _transform;
 };
 
 
