@@ -20,6 +20,8 @@ EXEC =
 
 # list of all the sources files
 SRCS	= bimage.cpp \
+          object.cpp \
+          shepre.cpp \
           ex5.cpp
 			
 # compiler 
