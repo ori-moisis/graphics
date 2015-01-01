@@ -55,7 +55,7 @@ public:
   Polygon(vector<Point3d> & vertices, vector<Point2d> textices, Vector3d & normal);
 
   // Ray intersection with the convex polygon //
-  virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor);
+  virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) const;
 
 private:
   // triangulate - split the polygon to triangles (saved on the _triangles memeber) //

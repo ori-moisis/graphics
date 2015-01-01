@@ -39,11 +39,11 @@ public:
   Sphere(Point3d C, double r);
 
   // Ray Sphere intersection //
-  virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor);
+  virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) const;
 
   Color3d textureDiffuse(const Point3d& P) const;
 
- private:
+ //private:
 
   Point3d   _C; // The sphere's center  //
   double    _r; // The sphere's radius  //

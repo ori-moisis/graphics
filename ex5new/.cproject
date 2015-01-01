@@ -30,6 +30,7 @@
 								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1311242578" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/cs/course/2013/cg/include"/>
 									<listOptionValue builtIn="false" value="/cs/course/2013/cg/OpenMesh/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/c++/4.9"/>
 								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.1637615641" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
@@ -58,4 +59,5 @@
 			<resource resourceType="PROJECT" workspacePath="/graphics_ex5"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>

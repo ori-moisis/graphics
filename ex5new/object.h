@@ -48,7 +48,7 @@ public:
   virtual void set_texture_map(BImage* image);
 
   // calculate intersection of a given ray with the object //
-  virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) = 0 ;
+  virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) const = 0 ;
 
   // Original methods (i left them because the ex3 scene uses them  //
   // and the ex mentioned that we must work with your ex3 file)     //
