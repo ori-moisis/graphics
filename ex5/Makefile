@@ -11,6 +11,8 @@
 
 CG_HOME = /cs/course/2013/cg
 
+GLM_INCLUDE = $(CG_HOME)/include
+
 # OpenMesh defs
 OM_DIR = $(CG_HOME)/OpenMesh
 OM_LIBS = -L$(OM_DIR)/lib -lOpenMeshCore
@@ -27,7 +29,7 @@ SRCS	= bimage.cpp \
 # compiler 
 CC	= g++
 
-INCLUDE = -I/usr/include -I/usr/X11R6/include $(OM_INCLUDE)
+INCLUDE = -I/usr/include -I/usr/X11R6/include $(OM_INCLUDE) $(GLM_INCLUDE)
 
 OBJS = $(subst .cpp,.o,$(SRCS)) 		#substituting .cc -> .o
 
