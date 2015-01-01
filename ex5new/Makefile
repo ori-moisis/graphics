@@ -23,6 +23,7 @@ SRCS	= bimage.cpp \
           object.cpp \
           sphere.cpp \
           camera.cpp \
+          scene.cpp  \
           ex5.cpp
 			
 # compiler 

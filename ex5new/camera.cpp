@@ -4,6 +4,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "ray.h"
+#include "scene.h"
 
 Camera::Camera()
 : _position (0.0, 0.0, 0.0)
@@ -27,22 +28,21 @@ Camera::Camera(Point3d& pos, Point3d& coi, Vector3d& up, double fov,
 
 }
 
-Color3d rayTrace();
+using namespace std;
 
 void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
                     Scene& scene) const {
     // TODO: The transform might be inverse, or completely wrong...
-
-    for (size_t i = row_start; i < row_start + number_of_rows; ++i) {
+    for (int i = row_start; i < row_start + number_of_rows; ++i) {
         double rowDir = ((0.5 + i) * tan(this->_fov_h) * 2) / img.height();
-        for (size_t j = 0; j < img.width(); ++j) {
+        for (int j = 0; j < img.width(); ++j) {
             double colDir = ((0.5 + j) * tan(this->_fov_h) * 2) / img.width();
             glm::vec4 dir(rowDir, colDir, 1, 0);
             dir = this->_transform * dir;
 
             Ray r (this->_position, Vector3d(dir.x, dir.y, dir.z));
-
-            // Do pixel
+            Color3d color = scene.trace_ray(r);
+            img(i, j) = Bpixel(color[0], color[1], color[2]);
         }
     }
 }
