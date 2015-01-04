@@ -31,9 +31,15 @@ int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
 	if (minT > tMax) {
 		return 0;
 	}
+	if (minT < EPS) {
+	    minT = std::max(sol1, sol2);
+	}
+	if (minT < EPS) {
+	    return 0;
+	}
 
 	t = minT;
-	P = ray.O() + t * ray.D();
+	P = ray(t);
 	N = P - this->_C;
 	N.normalize();
 

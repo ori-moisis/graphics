@@ -60,4 +60,5 @@ static const Point2d POINT_ORIGIN2D         = Point2d(0.0,0.0);
 
 static const double MAX_DEPTH = 50.0;
 
+
 #endif

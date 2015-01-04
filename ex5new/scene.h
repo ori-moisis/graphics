@@ -56,7 +56,7 @@ public:
   Scene(Color3d & color, AmbientLight & light, double cutoffAngle);
 
   // trace_ray - Ray scene intersection for color rays
-  Color3d trace_ray(Ray ray, double vis = 1.0) const;
+  Color3d trace_ray(Ray ray, double vis = 1.0, bool inObject = false) const;
 
   // add_object - add the given object to the scene
   void add_object(Object * obj);

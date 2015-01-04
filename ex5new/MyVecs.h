@@ -31,5 +31,12 @@ typedef OpenMesh::Vec3d Color3d;  // A 3D color               //
 typedef OpenMesh::Vec2f Point2d;
 typedef OpenMesh::Vec2f TexCoord;
 
+#include <iostream>
+inline std::ostream& operator<<(std::ostream& stream,
+                         const Color3d& c) {
+    stream << '(' << c[0] << ',' << c[1] << ',' << c[2] << ')';
+    return stream;
+}
+
 #endif
 

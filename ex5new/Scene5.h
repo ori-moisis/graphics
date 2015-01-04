@@ -24,7 +24,7 @@ struct Scene5 : public Scene
 		PointLight  * p1 = new PointLight(pos1,color1);
 		//scene.add_light(p1);
 
-		Point3d pos2(0,0,0);
+		Point3d pos2(0,0,1);
         Color3d color2(1,1,1);
         PointLight* p2 = new PointLight(pos2,color2);
         scene.add_light(p2);
@@ -101,7 +101,7 @@ struct Scene5 : public Scene
         //scene.add_object(sp4);
 
 
-        Point3d center5(0,0,-1);
+        Point3d center5(0,0,0);
         radius = 0.1;
         Sphere* sp5 = new Sphere(center5,radius);
         sp5->diffuse() = iron;
@@ -116,7 +116,7 @@ struct Scene5 : public Scene
 	virtual void setDefaultCamera(Camera& camera) const
 	{
 	    //Point3d pos(0,8,35);
-	    Point3d pos(0,0,0);
+	    Point3d pos(0,0,1);
 		double fov_h = 30 / 180.0 * M_PI;
 		Point3d coi(0,0,-1);
 		Vector3d up(0,1,0) ;

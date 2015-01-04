@@ -22,7 +22,7 @@ struct Scene4 : public Scene
 		Point3d pos1(30,20,20);
 		Color3d color1(1,1,1);
 		PointLight  * p1 = new PointLight(pos1,color1);
-		scene.add_light(p1);
+		//scene.add_light(p1);
 	}
 	
 	void defineGeometry()
@@ -56,9 +56,9 @@ struct Scene4 : public Scene
         Point3d center1(-6,2,-4);
         radius = 3;
         Sphere* sp1 = new Sphere(center1,radius);
-        sp1->diffuse() = iron;
+        sp1->diffuse() = green;
         sp1->reflection() = white*0.3;
-        sp1->specular() = white;
+        sp1->specular() = blue;
         sp1->shining() = 60;
         scene.add_object(sp1);
 

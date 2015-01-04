@@ -1,7 +1,12 @@
 #include "object.h"
 
 Object::Object()
-: _shining (DEFAULT_SHINING)
+: _ambient(COLOR_DEFAULT_AMBIENT)
+, _diffuse(COLOR_BLACK)
+, _specular(COLOR_BLACK)
+, _reflection(COLOR_BLACK)
+, _transparency(COLOR_BLACK)
+, _shining (DEFAULT_SHINING)
 , _index (DEFAULT_INDEX)
 , _diffuseTexture (0) {
 }

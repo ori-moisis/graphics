@@ -50,8 +50,9 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
             dir = this->_transform * dir;
 
             Ray r (this->_position, Vector3d(dir.x, dir.y, dir.z));
+            std::cout << "Tracing ray at pixel " << j << ',' << i << std::endl;
             Color3d color = scene.trace_ray(r);
-            img(i, j) = Bpixel(color[0], color[1], color[2]);
+            img(i, j) = Bpixel(color[0] * 255, color[1] * 255, color[2]* 255);
         }
     }
 }
