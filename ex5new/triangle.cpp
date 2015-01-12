@@ -35,10 +35,9 @@ Triangle::~Triangle() {
 
 bool Triangle::isInside(const Point3d& p, Point2d& texCoord) const {
 
-	// check the 3 edges: if one fails, the whole test fails
-    if (OpenMesh::dot((_p1-_p0) % (p-_p0), _normal) < 0) return false;
-    if (OpenMesh::dot((_p2-_p1) % (p-_p1), _normal) < 0) return false;
-    if (OpenMesh::dot((_p0-_p2) % (p-_p2), _normal) < 0) return false;
+	bool b1 = OpenMesh::dot((_p1-_p0) % (p-_p0), _normal) < 0;
+    if ((OpenMesh::dot((_p2-_p1) % (p-_p1), _normal) < 0) != b1) return false;
+    if ((OpenMesh::dot((_p0-_p2) % (p-_p2), _normal) < 0) != b1) return false;
 
     return true;
 }
