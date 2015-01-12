@@ -61,7 +61,7 @@ int Polygon::intersect(Ray& ray, double tMax, double& t, Point3d& P,
     }
 
     double tmpT = OpenMesh::dot(this->_normal, ray.O() - this->_vertices[0]) / -nDotD;
-    if (tmpT > tMax) {
+    if (tmpT > tMax || tmpT < EPS) {
         return NO_INTERSECTION;
     }
 

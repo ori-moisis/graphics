@@ -58,7 +58,7 @@ static const Color3d COLOR_BLUE             = Color3d(0.0,0.0,1.0); // Blue colo
 static const Point3d POINT_ORIGIN           = Point3d(0.0,0.0,0.0); // Origin point                 //
 static const Point2d POINT_ORIGIN2D         = Point2d(0.0,0.0);
 
-static const double MAX_DEPTH = 50.0;
+static const double MAX_DEPTH = 500.0;
 
 
 #endif

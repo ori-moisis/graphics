@@ -71,6 +71,7 @@ struct Scene1 : public Scene
 		sp0->specular() = white;
 		sp0->shining() = 60;
 		scene.add_object(sp0);
+		std::cout << "shpere 0 is at " << *(int*)&sp0 << std::endl;
 		
 		// Second sphere and string //
 		vector<Point3d> string1_vertices(4);
@@ -93,6 +94,7 @@ struct Scene1 : public Scene
 		sp1->specular() = white;
 		sp1->shining() = 60;
 		scene.add_object(sp1);
+		std::cout << "shpere 1 is at " << *(int*)&sp1 << std::endl;
 		
 		// Third sphere and string  //
 		vector<Point3d> string2_vertices(4);
@@ -118,6 +120,7 @@ struct Scene1 : public Scene
 		sp2->set_texture_map(w);
 #endif
 		scene.add_object(sp2);
+		std::cout << "shpere 2 is at " << *(int*)&sp2 << std::endl;
 		
 		// Fourth sphere and string //
 		vector<Point3d> string3_vertices(4);
@@ -140,6 +143,7 @@ struct Scene1 : public Scene
 		sp3->specular() = white;
 		sp3->shining() = 60;
 		scene.add_object(sp3);
+		std::cout << "shpere 3 is at " << *(int*)&sp3 << std::endl;
 		
 		// Fifth sphere and string  //
 		vector<Point3d> string4_vertices(4);
@@ -147,13 +151,6 @@ struct Scene1 : public Scene
 		string4_vertices[1] = Point3d(17.6, 4.0, -4.1);
 		string4_vertices[2] = Point3d(12.1, 21.0, -4.1);
 		string4_vertices[3] = Point3d(11.9, 21.0, -3.9);
-
-//        string4_vertices[0] = Point3d(17.6, 4.0, -3.9);
-//        string4_vertices[1] = Point3d(17.4, 4.0, -4.1);
-//        string4_vertices[2] = Point3d(11.9, 21.0, -4.1);
-//        string4_vertices[3] = Point3d(12.1, 21.0, -3.9);
-
-        std::cout << "string4" << std::endl;
 		Polygon* string4 = new Polygon(string4_vertices);
 		string4->diffuse() = iron;
 		string4->reflection() = black;
@@ -169,6 +166,7 @@ struct Scene1 : public Scene
 		sp4->specular() = white;
 		sp4->shining() = 60;
 		scene.add_object(sp4);
+		std::cout << "shpere 4 is at " << *(int*)&sp4 << std::endl;
 		
 		//create a plane
 		vector<Point3d> plane(4);
@@ -189,6 +187,7 @@ struct Scene1 : public Scene
 #if !WITHOUT_TEXTURES
 		poly->set_texture_map(b);
 #endif
+		std::cout << "plane is at " << *(int*)&poly << std::endl;
 		scene.add_object(poly);
 	}
 	
