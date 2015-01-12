@@ -28,8 +28,8 @@ class Triangle
 {
 public:
   // Constructor - create a triangle from the given points  //
-  Triangle(Point3d p0, Point3d p1, Point3d p2);
-  Triangle(Point3d p0, Point3d p1, Point3d p2, Point2d t0, Point2d t1, Point2d t2);
+  Triangle(const Vector3d& normal, Point3d p0, Point3d p1, Point3d p2);
+  Triangle(const Vector3d& normal, Point3d p0, Point3d p1, Point3d p2, Point2d t0, Point2d t1, Point2d t2);
 
 
 
@@ -40,9 +40,11 @@ public:
   bool isInside(IN const Point3d& p, OUT Point2d& texCoord) const;
 
 private:
+
+  Vector3d _normal; // Normal to the triangle
   Point3d _p0;  // One of the triangle vertices   //
-  Vector3d _u;  // a vector from p0 to p1         //
-  Vector3d _v;  // a vector from p0 to p2         //
+  Point3d _p1;  // One of the triangle vertices   //
+  Point3d _p2;  // One of the triangle vertices   //
 
   Point2d _t0;  // The texture map coordiate of p0  //
   Point2d _tu;  // The texture map coordinate of p1 //
@@ -50,11 +52,6 @@ private:
 
   bool  _textured;
 
-  // Used for checking if a point is inside the triangle  //
-  double _uu;
-  double _uv;
-  double _vv;
-  double _d;
 };
 
 #endif /* _TRIANGLE_HH */
