@@ -14,40 +14,39 @@
 #define MAX_SCENE_INDEX 7
 
 //#include "Scene1.h"
-//#include "Scene2.h"
+#include "Scene2.h"
 //#include "Scene3.h"
 #include "Scene4.h"
 #include "Scene5.h"
-// TODO: Include additional scenes here
 
 /** Create a new scene according to the scene index and parameters. */
 void setupScene(Scene** scene, size_t scene_index, size_t refRays, double cutoff)
 {
 	Scene* res;
-//	if (scene_index == 0)
-//	{
-//		res = new Scene1();
-//	}
-//	else if (scene_index == 1)
-//	{
-//		res = new Scene2();
-//	}
-//	else if (scene_index == 2)
-//	{
-//		res = new Scene3();
-//	}
-//	// TODO: Add additional scenes here
-//	else
-//	{
-//		res = NULL;
-//		std::cout << "Specify scene index between 0 and 0.";
-//	}
-
-	std::cout << "index=" << scene_index << std::endl;
-	if (scene_index == 4) {
+	if (scene_index == 1)
+	{
+		//res = new Scene1();
+	}
+	else if (scene_index == 2)
+	{
+		res = new Scene2();
+	}
+	else if (scene_index == 3)
+	{
+		//res = new Scene3();
+	}
+	else if (scene_index == 4)
+	{
 	    res = new Scene4();
-	} else {
+	}
+	else if (scene_index == 5)
+	{
 	    res = new Scene5();
+	}
+	else
+	{
+		res = NULL;
+		std::cout << "Specify scene index between 0 and 0.";
 	}
 	
 	if (res)

@@ -101,21 +101,36 @@ struct Scene5 : public Scene
         //scene.add_object(sp4);
 
 
-        Point3d center5(0,0,0);
-        radius = 0.1;
-        Sphere* sp5 = new Sphere(center5,radius);
-        sp5->diffuse() = iron;
-        sp5->reflection() = white*0.3;
-        sp5->specular() = white;
-        sp5->shining() = 60;
-        scene.add_object(sp5);
+        {
+            Point3d center(0,0,-1);
+            double radius = 0.5;
+            Sphere* sp = new Sphere(center,radius);
+            sp->diffuse() = iron;
+            sp->reflection() = white*0.3;
+            sp->specular() = white;
+            sp->shining() = 60;
+            scene.add_object(sp);
+        }
+
+        {
+            Point3d center(0.3,0.3,0);
+            double radius = 0.1;
+            Sphere* sp = new Sphere(center,radius);
+            //sp->diffuse() = blue;
+            sp->reflection() = white * 0.5;
+            sp->transparency() = white * 0.5;
+            sp->index() = 2.0;
+            sp->specular() = white;
+            sp->shining() = 16;
+            scene.add_object(sp);
+        }
+
 
 
 	}
 	
 	virtual void setDefaultCamera(Camera& camera) const
 	{
-	    //Point3d pos(0,8,35);
 	    Point3d pos(0,0,1);
 		double fov_h = 30 / 180.0 * M_PI;
 		Point3d coi(0,0,-1);

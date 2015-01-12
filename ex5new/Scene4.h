@@ -22,7 +22,7 @@ struct Scene4 : public Scene
 		Point3d pos1(30,20,20);
 		Color3d color1(1,1,1);
 		PointLight  * p1 = new PointLight(pos1,color1);
-		//scene.add_light(p1);
+		scene.add_light(p1);
 	}
 	
 	void defineGeometry()

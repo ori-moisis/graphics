@@ -19,11 +19,13 @@ OM_INCLUDE=  -I$(OM_DIR)/include
 EXEC = 
 
 # list of all the sources files
-SRCS	= bimage.cpp \
-          object.cpp \
-          sphere.cpp \
-          camera.cpp \
-          scene.cpp  \
+SRCS	= bimage.cpp   \
+          object.cpp   \
+          sphere.cpp   \
+          camera.cpp   \
+          scene.cpp    \
+          polygon.cpp  \
+          triangle.cpp \
           ex5.cpp
 			
 # compiler 
