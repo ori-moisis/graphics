@@ -147,6 +147,13 @@ struct Scene1 : public Scene
 		string4_vertices[1] = Point3d(17.6, 4.0, -4.1);
 		string4_vertices[2] = Point3d(12.1, 21.0, -4.1);
 		string4_vertices[3] = Point3d(11.9, 21.0, -3.9);
+
+//        string4_vertices[0] = Point3d(17.6, 4.0, -3.9);
+//        string4_vertices[1] = Point3d(17.4, 4.0, -4.1);
+//        string4_vertices[2] = Point3d(11.9, 21.0, -4.1);
+//        string4_vertices[3] = Point3d(12.1, 21.0, -3.9);
+
+        std::cout << "string4" << std::endl;
 		Polygon* string4 = new Polygon(string4_vertices);
 		string4->diffuse() = iron;
 		string4->reflection() = black;

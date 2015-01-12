@@ -63,6 +63,8 @@ private:
 
 
 private:
+  static Vector3d calcNormal(const vector<Point3d>& vertices);
+
   bool              _textured;  // Does the polygon have a texture map coordinates  //
   vector<Point2d>   _textices;  // The polygon's texture map coordinates            //
   vector<Point3d>   _vertices;  // The polygon's vertices                           //

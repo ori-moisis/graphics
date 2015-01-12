@@ -109,20 +109,47 @@ struct Scene5 : public Scene
             sp->reflection() = white*0.3;
             sp->specular() = white;
             sp->shining() = 60;
-            scene.add_object(sp);
+            //scene.add_object(sp);
+        }
+
+//        {
+//            Point3d center(0.3,0.3,0);
+//            double radius = 0.1;
+//            Sphere* sp = new Sphere(center,radius);
+//            //sp->diffuse() = blue;
+//            sp->reflection() = white * 0.5;
+//            sp->transparency() = white * 0.5;
+//            sp->index() = 2.0;
+//            sp->specular() = white;
+//            sp->shining() = 16;
+//            scene.add_object(sp);
+//        }
+
+        {
+            //create a plane
+            vector<Point3d> plane(4);
+            plane[0] = Point3d(-1.5,-1.5,-3);
+            plane[1] = Point3d(-1.5,0.5,-2);
+            plane[2] = Point3d(0.5,0.5,-2);
+            plane[3] = Point3d(0.5,-1.5,-3);
+            Polygon* poly = new Polygon(plane);
+            poly->diffuse() = ((blue + red) * 0.5 + white * 0.5) * 0.2;
+            poly->reflection() = (blue + red) * 0.5 + white * 0.5;
+            //scene.add_object(poly);
         }
 
         {
-            Point3d center(0.3,0.3,0);
-            double radius = 0.1;
-            Sphere* sp = new Sphere(center,radius);
-            //sp->diffuse() = blue;
-            sp->reflection() = white * 0.5;
-            sp->transparency() = white * 0.5;
-            sp->index() = 2.0;
-            sp->specular() = white;
-            sp->shining() = 16;
-            scene.add_object(sp);
+            //create a plane
+            vector<Point3d> plane(4);
+            plane[0] = Point3d(-1,-1,-40);
+            plane[1] = Point3d(1,-1,-40);
+            plane[2] = Point3d(1,-1,2);
+            plane[3] = Point3d(-1,-1,2);
+            Polygon* poly = new Polygon(plane);
+            //poly->diffuse() = ((blue + red) * 0.5 + white * 0.5) * 0.2;
+            poly->diffuse() = blue;
+            //poly->reflection() = (blue + red) * 0.5 + white * 0.5;
+            scene.add_object(poly);
         }
 
 

@@ -115,7 +115,7 @@ struct Scene2 : public Scene
 #if !WITHOUT_TEXTURES
 		poly->set_texture_map(b);
 #endif
-//		scene.add_object(poly);
+		scene.add_object(poly);
 		
 	}
 	
