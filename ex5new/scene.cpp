@@ -44,7 +44,7 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
     Object* obj;
     double t;
     Point3d intersectionPoint;
-    Point3d intersectionNormal;
+    Vector3d intersectionNormal;
     Color3d texColor(this->_background);
     Color3d outColor(this->_background);
     if (vis < 0.005) {
@@ -65,7 +65,7 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
 
         // Refract
         if (obj->getTransparency() != COLOR_BLACK) {
-            double index = inObject ? 1/obj->getIndex() : obj->getIndex();
+            double index = inObject ? obj->getIndex() : (1/obj->getIndex());
             intersectionNormal = (inObject ? -1.0 : 1.0) * intersectionNormal;
             double c1 = -OpenMesh::dot(ray.D(), intersectionNormal);
             double c2 = 1-index*index*(1-(c1*c1));
@@ -89,12 +89,31 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
         for (vector<PointLight*>::const_iterator light_iter = this->_lights.begin();
              light_iter != this->_lights.end ();
              ++light_iter) {
-            // TODO: check shadows
-            outColor += doPhong(*obj,
-                                intersectionPoint,
-                                intersectionNormal,
-                                -ray.D(),
-                                **light_iter);
+
+            // Check shadows
+            bool hasShadow = false;
+            Vector3d vecToLight = (*light_iter)->_position - intersectionPoint;
+            Ray toLight(intersectionPoint, vecToLight);
+
+            Object* shadowObj;
+            Point3d shadowP;
+            Vector3d shadowN;
+            Color3d shadowColor;
+            double shadowT;
+
+            if (this->findNearestObject(toLight, &shadowObj, shadowT, shadowP, shadowN, shadowColor)) {
+                if (shadowT < vecToLight.length()) {
+                    hasShadow = true;
+                }
+            }
+
+            if (! hasShadow) {
+                outColor += doPhong(*obj,
+                                    intersectionPoint,
+                                    intersectionNormal,
+                                    -ray.D(),
+                                    **light_iter);
+            }
         }
         // Clamp values to [0..1]
         for (int i = 0; i < 3; ++i) {
