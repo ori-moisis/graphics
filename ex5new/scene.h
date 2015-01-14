@@ -92,12 +92,12 @@ public:
 private:
   // find the nearest object intersecting with the given ray
   bool findNearestObject(IN Ray ray, OUT Object** object, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) const;
-  
+
   // calculate the reflection color at the given intersection point
-  Color3d calcReflection(const Ray& ray, const Point3d& P, const Vector3d& N, const Object& object, double vis = 1.0, bool isCritical = false) const;
+  void calcReflection(const Ray& ray, const Point3d& P, const Vector3d& N, double vis, bool inObject) const;
 
   // calculate the refraction color at the given intersection point
-  Color3d calcRefraction(const Ray& ray, const Point3d& P, const Vector3d& N, const Object& object, double vis = 1.0) const;
+  Color3d calcRefraction(const Ray& ray, const Point3d& P, const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect) const;
 
 private:
   
@@ -106,9 +106,10 @@ private:
 
   AmbientLight            _ambientLight;  // The scene's Ambient light    //
   Color3d                 _background ;   // The scene's background color //
+  mutable Color3d         _lastReflection;
 
-  Color3d                 _lastReflection;  // The last calculated reflection color //
   
+
   double _cutoffAngle;
   double _numberOfRefRays;
 };

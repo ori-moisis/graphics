@@ -4,14 +4,13 @@
 
 Scene::Scene()
 : _background (COLOR_BLACK)
-, _lastReflection (COLOR_BLACK)
 , _cutoffAngle (0)
 , _numberOfRefRays (0) {
 }
 
 Scene::Scene(Color3d& color, AmbientLight& light, double cutoffAngle)
-: _background (color)
-, _ambientLight (light)
+: _ambientLight (light)
+, _background (color)
 , _cutoffAngle(cutoffAngle)
 , _numberOfRefRays(0) {
 }
@@ -50,6 +49,7 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
     if (vis < 0.005) {
         return outColor;
     }
+
     if (this->findNearestObject(ray, &obj, t, intersectionPoint, intersectionNormal, texColor)) {
         std::cout << "hit object " << *(int*)&obj << " at point " << intersectionPoint << std::endl;
         outColor = COLOR_BLACK;
@@ -57,34 +57,17 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
         vis = vis/2;
 
         // Reflect
-        if (obj->getReflection() != COLOR_BLACK) {
-            Ray reflectedRay(intersectionPoint, doReflect(ray.D(), intersectionNormal));
-            Color3d reflectColor = this->trace_ray(reflectedRay, vis, inObject);
-            outColor += obj->getReflection() * reflectColor;
+        bool haveReflect = obj->getReflection() != COLOR_BLACK;
+        if (haveReflect) {
+            this->calcReflection(ray, intersectionPoint, intersectionNormal, vis, inObject);
+            outColor += obj->getReflection() * this->_lastReflection;
         }
 
         // Refract
         if (obj->getTransparency() != COLOR_BLACK) {
-            double index = inObject ? obj->getIndex() : (1/obj->getIndex());
-            intersectionNormal = (inObject ? -1.0 : 1.0) * intersectionNormal;
-            double c1 = -OpenMesh::dot(ray.D(), intersectionNormal);
-            double c2 = 1-index*index*(1-(c1*c1));
-
-            if (c2 > 0) {
-                Vector3d refractedD = (index * ray.D()) + (index*c1 - sqrt(c2)) * intersectionNormal;
-
-                std::cout << "index= " << index << " refract from " << ray.D() << " to " << refractedD << std::endl;
-
-                Ray refractedRay(intersectionPoint, refractedD);
-                outColor += obj->getTransparency() * this->trace_ray(refractedRay, vis, !inObject);
-            } else {
-                Ray reflectedRay(intersectionPoint, doReflect(ray.D(), intersectionNormal));
-                std::cout << "index= " << index << " reflect from " << ray.D() << " to " << reflectedRay.D() << std::endl;
-                Color3d reflectColor = this->trace_ray(reflectedRay, vis, inObject);
-                outColor += obj->getTransparency() * reflectColor;
-            }
+            outColor += obj->getTransparency() *
+                    this->calcRefraction(ray, intersectionPoint, intersectionNormal, *obj, vis, inObject, haveReflect);
         }
-
 
         for (vector<PointLight*>::const_iterator light_iter = this->_lights.begin();
              light_iter != this->_lights.end ();
@@ -161,14 +144,28 @@ bool Scene::findNearestObject(Ray ray, Object** object, double& t, Point3d& P,
     return found;
 }
 
-Color3d Scene::calcReflection(const Ray& ray, const Point3d& P,
-        const Vector3d& N, const Object& object, double vis,
-        bool isCritical) const {
-
-    return Color3d(0.5,0.5,0.5);
+void Scene::calcReflection(const Ray& ray, const Point3d& P,
+        const Vector3d& N, double vis, bool inObject) const {
+    Ray reflectedRay(P, doReflect(ray.D(), N));
+    this->_lastReflection = this->trace_ray(reflectedRay, vis, inObject);
 }
 
 Color3d Scene::calcRefraction(const Ray& ray, const Point3d& P,
-        const Vector3d& N, const Object& object, double vis) const {
-    return Color3d(0.5,0.5,0.5);
+        const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect) const {
+
+    double index = inObject ? object.getIndex() : (1/object.getIndex());
+    Vector3d normal = (inObject ? -1.0 : 1.0) * N;
+    double c1 = -OpenMesh::dot(ray.D(), normal);
+    double c2 = 1-index*index*(1-(c1*c1));
+
+    if (c2 > 0) {
+        Vector3d refractedD = (index * ray.D()) + (index*c1 - sqrt(c2)) * normal;
+        Ray refractedRay(P, refractedD);
+        return this->trace_ray(refractedRay, vis, !inObject);
+    } else {
+        if (! haveReflect) {
+            this->calcReflection(ray, P, N, vis, inObject);
+        }
+        return this->_lastReflection;
+    }
 }
