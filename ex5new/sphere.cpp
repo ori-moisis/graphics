@@ -12,6 +12,10 @@ Sphere::Sphere(Point3d C, double r)
 , _r (r) {
 }
 
+Sphere::~Sphere()
+{
+}
+
 int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
 					  Vector3d& N, Color3d& texColor) const {
 	Vector3d tmp = ray.O() - this->_C;

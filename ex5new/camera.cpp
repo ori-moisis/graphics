@@ -56,8 +56,7 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
                 double rowDir = (rowOffset + i - img.height()/2) * tan(fov_v) * 2 / img.height();
                 double colDir = (img.width()/2 - colOffset - j) * tan(this->_fov_h) * 2 / img.width();
 
-                double zDir = this->_coi[2] - this->_position[2];
-                glm::vec4 dir(rowDir, colDir, zDir / abs(zDir), 0);
+                glm::vec4 dir(rowDir, colDir, -1, 0);
                 dir = this->_transform * dir;
 
                 Ray r (this->_position, Vector3d(dir.x, dir.y, dir.z));
