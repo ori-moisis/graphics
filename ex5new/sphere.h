@@ -38,6 +38,8 @@ public:
   // Constructor - create a sphere with the given parameters  //
   Sphere(Point3d C, double r);
 
+  virtual ~Sphere();
+
   // Ray Sphere intersection //
   virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) const;
 
