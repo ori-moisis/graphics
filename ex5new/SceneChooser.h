@@ -15,7 +15,7 @@
 
 #include "Scene1.h"
 #include "Scene2.h"
-//#include "Scene3.h"
+#include "Scene3.h"
 #include "Scene4.h"
 #include "Scene5.h"
 
@@ -33,7 +33,7 @@ void setupScene(Scene** scene, size_t scene_index, size_t refRays, double cutoff
 	}
 	else if (scene_index == 3)
 	{
-		//res = new Scene3();
+		res = new Scene3();
 	}
 	else if (scene_index == 4)
 	{
