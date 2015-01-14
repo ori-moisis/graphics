@@ -64,6 +64,9 @@ public:
   // add_light - add the given light to the scene
   void add_light(PointLight * light);
 
+  // add_sphere_light - add a light source in the shape of a sphere
+  void add_sphere_light(Sphere* light);
+
   // backgroundColor - return reference to the background color
   Color3d & backgroundColor() {return _background;}
 
@@ -91,7 +94,7 @@ public:
 	
 private:
   // find the nearest object intersecting with the given ray
-  bool findNearestObject(IN Ray ray, OUT Object** object, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) const;
+  bool findNearestObject(IN Ray ray, OUT Object** object, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor, Object* additionalObject = NULL) const;
 
   // calculate the reflection color at the given intersection point
   void calcReflection(const Ray& ray, const Point3d& P, const Vector3d& N, double vis, bool inObject) const;
@@ -99,10 +102,13 @@ private:
   // calculate the refraction color at the given intersection point
   Color3d calcRefraction(const Ray& ray, const Point3d& P, const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect) const;
 
+  double calcShadowRatio(const Point3d& P, const Point3d& lightCenter, Sphere* lightObj = NULL) const;
+
 private:
   
-  vector<Object *>        _objects;       // The scene's objects          //
-  vector<PointLight * >   _lights;        // The scene's point lights     //
+  vector<Object*>        _objects;       // The scene's objects          //
+  vector<PointLight*>    _lights;        // The scene's point lights     //
+  vector<Sphere*>        _sphereLights;  // Sphere lights                //
 
   AmbientLight            _ambientLight;  // The scene's Ambient light    //
   Color3d                 _background ;   // The scene's background color //

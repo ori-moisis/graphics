@@ -2,6 +2,8 @@
 
 #include "sphere.h"
 
+static const int NUM_SHADOW_RAYS = 3;
+
 Scene::Scene()
 : _background (COLOR_BLACK)
 , _cutoffAngle (0)
@@ -24,16 +26,17 @@ Color3d doPhong(const Object& obj,
                 const Point3d& position,
                 const Vector3d& normal,
                 const Vector3d& toEye,
-                const PointLight& light) {
+                const Point3d& lightPos,
+                const Color3d& lightColor) {
 
-    Vector3d toLight = light._position - position;
+    Vector3d toLight = lightPos - position;
     toLight.normalize();
 
     Vector3d reflect = doReflect(-toLight, normal);
     reflect.normalize();
 
-    Color3d diffuseColor = obj.getDiffuse() * light._color * std::max(0.0, OpenMesh::dot(toLight, normal));
-    Color3d specularColor = obj.getSpecular() * light._color * pow(std::max(0.0, OpenMesh::dot(reflect, toEye)), obj.getShining());
+    Color3d diffuseColor = obj.getDiffuse() * lightColor * std::max(0.0, OpenMesh::dot(toLight, normal));
+    Color3d specularColor = obj.getSpecular() * lightColor * pow(std::max(0.0, OpenMesh::dot(reflect, toEye)), obj.getShining());
 
     Color3d outColor = diffuseColor + specularColor;
     return outColor;
@@ -79,30 +82,36 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
              ++light_iter) {
 
             // Check shadows
-            bool hasShadow = false;
-            Vector3d vecToLight = (*light_iter)->_position - intersectionPoint;
-            Ray toLight(intersectionPoint, vecToLight);
+            double shadowRatio = this->calcShadowRatio(intersectionPoint, (*light_iter)->_position, NULL);
 
-            Object* shadowObj;
-            Point3d shadowP;
-            Vector3d shadowN;
-            Color3d shadowColor;
-            double shadowT;
-
-            if (this->findNearestObject(toLight, &shadowObj, shadowT, shadowP, shadowN, shadowColor)) {
-                if (shadowT < vecToLight.length()) {
-                    hasShadow = true;
-                }
-            }
-
-            if (! hasShadow) {
+            if (shadowRatio == 0) {
                 outColor += doPhong(*obj,
                                     intersectionPoint,
                                     intersectionNormal,
                                     -ray.D(),
-                                    **light_iter);
+                                    (*light_iter)->_position,
+                                    (*light_iter)->_color);
             }
         }
+
+        for (vector<Sphere*>::const_iterator light_iter = this->_sphereLights.begin();
+             light_iter != this->_sphereLights.end();
+             ++light_iter) {
+
+            // Check shadows
+            double shadowRatio = this->calcShadowRatio(intersectionPoint, (*light_iter)->_C, *light_iter);
+            Color3d color = doPhong(*obj,
+                                    intersectionPoint,
+                                    intersectionNormal,
+                                    -ray.D(),
+                                    (*light_iter)->_C,
+                                    (*light_iter)->getSpecular());
+            outColor += color * (1-shadowRatio);
+        }
+
+        // Add ambient
+        outColor += this->_ambientLight._color;
+
         // Clamp values to [0..1]
         for (int i = 0; i < 3; ++i) {
             outColor[i] = std::max(0.0, std::min(1.0, outColor[i]));
@@ -120,8 +129,18 @@ void Scene::add_light(PointLight* light) {
     this->_lights.push_back(light);
 }
 
+void Scene::add_sphere_light(Sphere* light) {
+    this->_sphereLights.push_back(light);
+}
+
 double randAngle(double maxDegrees) {
 	return (((double) rand() / RAND_MAX) * maxDegrees) * M_PI / 180;
+}
+
+Vector3d randVector(double length) {
+    Vector3d vec((double) rand() / RAND_MAX, (double) rand() / RAND_MAX, (double) rand() / RAND_MAX);
+    vec.normalize();
+    return vec * length;
 }
 
 Ray Scene::perturbateRay(const Ray& r) const {
@@ -138,13 +157,25 @@ Ray Scene::perturbateRay(const Ray& r) const {
 }
 
 bool Scene::findNearestObject(Ray ray, Object** object, double& t, Point3d& P,
-        Vector3d& N, Color3d& texColor) const {
+        Vector3d& N, Color3d& texColor, Object* additionalObject) const {
     double currT = MAX_DEPTH;
     t = MAX_DEPTH;
     Point3d currP;
     Vector3d currN;
     Color3d currColor;
     bool found = false;
+
+    if (additionalObject) {
+        if (additionalObject->intersect(ray, t, currT, currP, currN, currColor)) {
+            t = currT;
+            P = currP;
+            N = currN;
+            texColor = currColor;
+            *object = additionalObject;
+            found = true;
+        }
+    }
+
     for (std::vector<Object*>::const_iterator obj_iter = this->_objects.begin();
          obj_iter != this->_objects.end();
          ++obj_iter) {
@@ -173,7 +204,6 @@ void Scene::calcReflection(const Ray& ray, const Point3d& P,
 	else {
 		for (int i = 0; i < this->_numberOfRefRays; ++i) {
 			Ray randomRay = this->perturbateRay(reflectedRay);
-			//std::cout << "random ray #" << i << " direction: " << "theta=" << randTheta << " phi=" << randPhi << " [" << x << ", " << y << ", " << z <<"]" << std::endl;
 			reflectColor += this->trace_ray(randomRay, vis, inObject);
 		}
 		this->_lastReflection = reflectColor / this->_numberOfRefRays;
@@ -207,4 +237,35 @@ Color3d Scene::calcRefraction(const Ray& ray, const Point3d& P,
         }
         return this->_lastReflection;
     }
+}
+
+double Scene::calcShadowRatio(const Point3d& P, const Point3d& lightCenter, Sphere* lightObj) const {
+    double shadowRatio = 0;
+
+    Object* shadowObj;
+    Point3d shadowP;
+    Vector3d shadowN;
+    Color3d shadowColor;
+    double shadowT;
+    if (lightObj) {
+        for (int i = 0; i < NUM_SHADOW_RAYS; ++i) {
+            // Randomize a point on the light source
+            Ray toLight(P, lightCenter + randVector(lightObj->_r) - P);
+            if (this->findNearestObject(toLight, &shadowObj, shadowT, shadowP, shadowN, shadowColor, lightObj)) {
+                if (shadowObj != lightObj) {
+                    shadowRatio += 1 / NUM_SHADOW_RAYS;
+                }
+            }
+        }
+    } else {
+        Vector3d vecToLight = lightCenter - P;
+        Ray toLight(P, vecToLight);
+        if (this->findNearestObject(toLight, &shadowObj, shadowT, shadowP, shadowN, shadowColor)) {
+            if (shadowT < vecToLight.length()) {
+                shadowRatio = 1;
+            }
+        }
+    }
+
+    return shadowRatio;
 }

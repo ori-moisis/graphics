@@ -24,7 +24,10 @@ struct Scene2 : public Scene
 		Point3d pos(10,100,10);
 		Color3d color(1,1,1);
 		PointLight  * p = new PointLight(pos,color);
-		scene.add_light(p);
+		//scene.add_light(p);
+		Sphere* light = new Sphere(pos, 1);
+		light->specular() = Color3d(1.0);
+		scene.add_sphere_light(light);
 		
 		Point3d pos1(10,20,30);
 		Color3d color1(1,1,1);
