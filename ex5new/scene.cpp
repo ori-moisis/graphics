@@ -51,6 +51,7 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
         return outColor;
     }
     if (this->findNearestObject(ray, &obj, t, intersectionPoint, intersectionNormal, texColor)) {
+        std::cout << "hit object " << *(int*)&obj << " at point " << intersectionPoint << std::endl;
         outColor = COLOR_BLACK;
 
         vis = vis/2;
@@ -65,16 +66,20 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
         // Refract
         if (obj->getTransparency() != COLOR_BLACK) {
             double index = inObject ? 1/obj->getIndex() : obj->getIndex();
+            intersectionNormal = (inObject ? -1.0 : 1.0) * intersectionNormal;
             double c1 = -OpenMesh::dot(ray.D(), intersectionNormal);
-            double c2 = 1-index*index*(1-c1*c1);
+            double c2 = 1-index*index*(1-(c1*c1));
 
             if (c2 > 0) {
-                Vector3d refractedD = (index * ray.D()) + (index*c1 - c2) * intersectionNormal;
+                Vector3d refractedD = (index * ray.D()) + (index*c1 - sqrt(c2)) * intersectionNormal;
+
+                std::cout << "index= " << index << " refract from " << ray.D() << " to " << refractedD << std::endl;
+
                 Ray refractedRay(intersectionPoint, refractedD);
                 outColor += obj->getTransparency() * this->trace_ray(refractedRay, vis, !inObject);
             } else {
-                std::cout << "c2<=0: " << c2 << std::endl;
                 Ray reflectedRay(intersectionPoint, doReflect(ray.D(), intersectionNormal));
+                std::cout << "index= " << index << " reflect from " << ray.D() << " to " << reflectedRay.D() << std::endl;
                 Color3d reflectColor = this->trace_ray(reflectedRay, vis, inObject);
                 outColor += obj->getTransparency() * reflectColor;
             }

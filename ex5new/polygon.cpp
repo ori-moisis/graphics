@@ -99,6 +99,9 @@ Vector3d Polygon::calcNormal(const vector<Point3d>& vertices) {
     if (vertices.size() < 3) {
         return Vector3d(0,0,0);
     }
+
+    // TODO: fix normal calculation to consider more points
+
     // Return the cross product of two vectors
     Vector3d normal = (vertices[1] - vertices[0]) % (vertices[2] - vertices[1]);
     normal.normalize();

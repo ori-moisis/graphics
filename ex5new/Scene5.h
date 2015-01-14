@@ -102,55 +102,49 @@ struct Scene5 : public Scene
 
 
         {
-            Point3d center(0,0,-1);
-            double radius = 0.5;
+            Point3d center(0,0,-5);
+            double radius = 0.7;
             Sphere* sp = new Sphere(center,radius);
-            sp->diffuse() = iron;
-            sp->reflection() = white*0.3;
-            sp->specular() = white;
-            sp->shining() = 60;
+            //sp->diffuse() = blue * 0.3;
+            sp->transparency() = white * 0.9;
+            sp->index() = 1.1;
+            //sp->reflection() = white*0.3;
+            //sp->specular() = white;
+            //sp->shining() = 60;
+            scene.add_object(sp);
+        }
+
+        {
+            Point3d center(0,0,-3);
+            double radius = 0.8;
+            Sphere* sp = new Sphere(center,radius);
+            //sp->diffuse() = blue;
+            sp->transparency() = white;
+            sp->index() = 1;
+            //sp->reflection() = white*0.3;
+            //sp->specular() = white;
+            //sp->shining() = 60;
             //scene.add_object(sp);
         }
 
-//        {
-//            Point3d center(0.3,0.3,0);
-//            double radius = 0.1;
-//            Sphere* sp = new Sphere(center,radius);
-//            //sp->diffuse() = blue;
-//            sp->reflection() = white * 0.5;
-//            sp->transparency() = white * 0.5;
-//            sp->index() = 2.0;
-//            sp->specular() = white;
-//            sp->shining() = 16;
-//            scene.add_object(sp);
-//        }
-
         {
             //create a plane
             vector<Point3d> plane(4);
-            plane[0] = Point3d(-1.5,-1.5,-3);
-            plane[1] = Point3d(-1.5,0.5,-2);
-            plane[2] = Point3d(0.5,0.5,-2);
-            plane[3] = Point3d(0.5,-1.5,-3);
-            Polygon* poly = new Polygon(plane);
-            poly->diffuse() = ((blue + red) * 0.5 + white * 0.5) * 0.2;
-            poly->reflection() = (blue + red) * 0.5 + white * 0.5;
-            //scene.add_object(poly);
-        }
+            plane[0] = Point3d(-2,-2,-10);
+            plane[1] = Point3d(2,-2,-10);
+            plane[2] = Point3d(2,2,-10);
+            plane[3] = Point3d(-2,2,-10);
 
-        {
-            //create a plane
-            vector<Point3d> plane(4);
-            plane[0] = Point3d(-1,-1,-40);
-            plane[1] = Point3d(1,-1,-40);
-            plane[2] = Point3d(1,-1,2);
-            plane[3] = Point3d(-1,-1,2);
+
             Polygon* poly = new Polygon(plane);
             //poly->diffuse() = ((blue + red) * 0.5 + white * 0.5) * 0.2;
-            poly->diffuse() = blue;
+            poly->diffuse() = green * 0.5;
+            //poly->transparency() = white * 0.5;
+            //poly->index() = 100;
             //poly->reflection() = (blue + red) * 0.5 + white * 0.5;
             scene.add_object(poly);
         }
+
 
 
 
