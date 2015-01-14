@@ -56,6 +56,11 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
 
         vis = vis/2;
 
+        // Fix normal direction to be opposite the incoming ray
+        if (OpenMesh::dot(intersectionNormal, ray.D()) > 0) {
+            intersectionNormal = -intersectionNormal;
+        }
+
         // Reflect
         bool haveReflect = obj->getReflection() != COLOR_BLACK;
         if (haveReflect) {
@@ -179,12 +184,11 @@ Color3d Scene::calcRefraction(const Ray& ray, const Point3d& P,
         const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect) const {
 
     double index = inObject ? object.getIndex() : (1/object.getIndex());
-    Vector3d normal = (inObject ? -1.0 : 1.0) * N;
-    double c1 = -OpenMesh::dot(ray.D(), normal);
+    double c1 = -OpenMesh::dot(ray.D(), N);
     double c2 = 1-index*index*(1-(c1*c1));
 
     if (c2 > 0) {
-        Vector3d refractedD = (index * ray.D()) + (index*c1 - sqrt(c2)) * normal;
+        Vector3d refractedD = (index * ray.D()) + (index*c1 - sqrt(c2)) * N;
         Ray refractedRay(P, refractedD);
         if (this->_numberOfRefRays == 1) {
         	return this->trace_ray(refractedRay, vis, !inObject);
