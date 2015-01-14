@@ -5,14 +5,14 @@
 Scene::Scene()
 : _background (COLOR_BLACK)
 , _cutoffAngle (0)
-, _numberOfRefRays (0) {
+, _numberOfRefRays (1) {
 }
 
 Scene::Scene(Color3d& color, AmbientLight& light, double cutoffAngle)
 : _ambientLight (light)
 , _background (color)
 , _cutoffAngle(cutoffAngle)
-, _numberOfRefRays(0) {
+, _numberOfRefRays(1) {
 }
 
 
@@ -115,9 +115,21 @@ void Scene::add_light(PointLight* light) {
     this->_lights.push_back(light);
 }
 
+double randAngle(double maxDegrees) {
+	return (((double) rand() / RAND_MAX) * maxDegrees) * M_PI / 180;
+}
+
 Ray Scene::perturbateRay(const Ray& r) const {
-    // TODO: change this when we want multiple rays
-    return r;
+	double rayTheta = atan2(r.D()[1], r.D()[0]);
+	double rayPhi = acos(r.D()[2]);	// r=1, so z/r == z
+	double randTheta = rayTheta + randAngle(this->_cutoffAngle);
+	double randPhi = rayPhi + randAngle(this->_cutoffAngle);
+	double x = cos(randTheta) * sin(randPhi);
+	double y = sin(randTheta) * sin(randPhi);
+	double z = cos(randPhi);
+	Vector3d D = Vector3d(x, y, z);
+	Ray randomRay = Ray(r.O(), D);
+	return randomRay;
 }
 
 bool Scene::findNearestObject(Ray ray, Object** object, double& t, Point3d& P,
@@ -146,8 +158,21 @@ bool Scene::findNearestObject(Ray ray, Object** object, double& t, Point3d& P,
 
 void Scene::calcReflection(const Ray& ray, const Point3d& P,
         const Vector3d& N, double vis, bool inObject) const {
+
     Ray reflectedRay(P, doReflect(ray.D(), N));
-    this->_lastReflection = this->trace_ray(reflectedRay, vis, inObject);
+	Color3d reflectColor = COLOR_BLACK;
+
+	if (this->_numberOfRefRays == 1) {
+		this->_lastReflection = this->trace_ray(reflectedRay, vis, inObject);
+	}
+	else {
+		for (int i = 0; i < this->_numberOfRefRays; ++i) {
+			Ray randomRay = this->perturbateRay(reflectedRay);
+			//std::cout << "random ray #" << i << " direction: " << "theta=" << randTheta << " phi=" << randPhi << " [" << x << ", " << y << ", " << z <<"]" << std::endl;
+			reflectColor += this->trace_ray(randomRay, vis, inObject);
+		}
+		this->_lastReflection = reflectColor / this->_numberOfRefRays;
+	}
 }
 
 Color3d Scene::calcRefraction(const Ray& ray, const Point3d& P,
@@ -161,7 +186,17 @@ Color3d Scene::calcRefraction(const Ray& ray, const Point3d& P,
     if (c2 > 0) {
         Vector3d refractedD = (index * ray.D()) + (index*c1 - sqrt(c2)) * normal;
         Ray refractedRay(P, refractedD);
-        return this->trace_ray(refractedRay, vis, !inObject);
+        if (this->_numberOfRefRays == 1) {
+        	return this->trace_ray(refractedRay, vis, !inObject);
+        }
+        else {
+        	Color3d refractColor = COLOR_BLACK;
+    		for (int i = 0; i < this->_numberOfRefRays; ++i) {
+    			Ray randomRay = this->perturbateRay(refractedRay);
+    			refractColor += this->trace_ray(randomRay, vis, !inObject);
+    		}
+    		return refractColor / this->_numberOfRefRays;
+        }
     } else {
         if (! haveReflect) {
             this->calcReflection(ray, P, N, vis, inObject);
