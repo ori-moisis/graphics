@@ -51,27 +51,24 @@ int MyMeshObject::intersect(Ray& ray, double tMax, double& t, Point3d& P,
 }
 
 void MyMeshObject::calculateBoundingSphere() {
-    const double max_double = std::numeric_limits<double>::max();
-    Point3d lowerLeft(max_double,max_double,max_double);
-    Point3d upperRight(-max_double,-max_double,-max_double);
-
-    int i = 0;
     for (MyMesh::VertexIter iter = _mesh.vertices_begin();
          iter != _mesh.vertices_end();
-         ++iter, ++i)
-    {
+         ++iter) {
         Point3d p = _mesh.point(*iter);
         for (int j = 0; j < 3; ++j)
         {
             this->_center[j] += p[j];
-            lowerLeft[j] = fmin(lowerLeft[j], p[j]);
-            upperRight[j] = fmax(upperRight[j], p[j]);
         }
     }
     this->_center /= _mesh.n_vertices();
 
-    double radius = std::max((this->_center - upperRight).length(),
-                             (this->_center - lowerLeft).length());
+	double radius = 0;
+	for (MyMesh::VertexIter iter = _mesh.vertices_begin();
+		iter != _mesh.vertices_end();
+		++iter) {
+		double dist = (this->_center - _mesh.point(*iter)).length();
+		radius = std::max(radius, dist);
+	}
 
     this->_boundingSphere = new Sphere(this->_center, radius);
 
@@ -93,5 +90,4 @@ void MyMeshObject::calculateBoundingSphere() {
 
         _mesh.property(this->_fp_polygon_handle, iter) = new Polygon(points, norm);
     }
-
 }

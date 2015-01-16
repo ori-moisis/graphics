@@ -9,6 +9,7 @@
 #ifndef __GENERAL_H__
 #define __GENERAL_H__
 
+#include <algorithm>
 #include "MyVecs.h"
 
 //////////////////////////////
@@ -22,11 +23,14 @@
 
 #define minXY(X, Y)  ((X) < (Y) ? (X) : (Y)) // minimum of two values //
 #define maxXY(X, Y)  ((X) > (Y) ? (X) : (Y)) // maximum of two values //
-
+#define CLAMP(X)     (minXY(1, maxXY(0, X)))
 
 //////////////////////////////
 // Constants                //
 //////////////////////////////
+
+// TODO - remove this
+static const bool DO_PRINTS = false;
 
 // Vector3d,Point3d array index //
 static const int X      = 0;

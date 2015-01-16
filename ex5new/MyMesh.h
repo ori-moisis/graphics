@@ -15,7 +15,7 @@
 
 #include "OpenMesh/Core/IO/MeshIO.hh"
 // for some reason, in windows the file is located on a different location  //
-#ifdef WIN32
+#if defined WIN32 && ! defined ORI
 #include "OpenMesh/Core/Mesh/Types/PolyMesh_ArrayKernelT.hh"
 #else
 #include "OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh"

@@ -17,42 +17,55 @@ Sphere::~Sphere()
 }
 
 int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
-					  Vector3d& N, Color3d& texColor) const {
-	Vector3d tmp = ray.O() - this->_C;
-	double b = 2 * OpenMesh::dot(ray.D(), tmp);
-	double a = 1.0; //OpenMesh::dot(ray.D(), ray.D());
-	double c = OpenMesh::dot(tmp, tmp) - (this->_r * this->_r);
-	double disc = b*b - 4*a*c;
+                      Vector3d& N, Color3d& texColor) const {
+    Vector3d tmp = ray.O() - this->_C;
+    double b = 2 * OpenMesh::dot(ray.D(), tmp);
+    double a = 1.0; //OpenMesh::dot(ray.D(), ray.D());
+    double c = OpenMesh::dot(tmp, tmp) - (this->_r * this->_r);
+    double disc = b*b - 4*a*c;
 
-	if (disc < 0) {
-		return 0;
-	}
+    if (disc < 0) {
+        return 0;
+    }
 
-	disc = sqrt(disc);
-	double sol1 = (-b + disc) / (2*a);
-	double sol2 = (-b - disc) / (2*a);
-	double minT = std::min(sol1, sol2);
-	if (minT > tMax) {
-		return 0;
-	}
-	if (minT < EPS) {
-	    minT = std::max(sol1, sol2);
-	}
-	if (minT < EPS) {
-	    return 0;
-	}
+    disc = sqrt(disc);
+    double sol1 = (-b + disc) / (2*a);
+    double sol2 = (-b - disc) / (2*a);
+    double minT = std::min(sol1, sol2);
+    if (minT > tMax) {
+        return 0;
+    }
+    if (minT < EPS) {
+        minT = std::max(sol1, sol2);
+    }
+    if (minT < EPS) {
+        return 0;
+    }
 
-	t = minT;
-	P = ray(t);
-	N = P - this->_C;
-	N.normalize();
+    t = minT;
+    P = ray(t);
+    N = P - this->_C;
+    N.normalize();
 
-	texColor = Color3d(0,0,0);
+    texColor = COLOR_WHITE;
+    if (this->_diffuseTexture) {
+        double theta = atan2(N[0], N[2]);
+        double phi = atan2(N[1], sqrt(N[0]*N[0] + N[2]*N[2]));
 
-	return 1;
+        double texU = CLAMP((theta + M_PI) / (2 * M_PI)) * this->_diffuseTexture->width();
+        double texV = CLAMP((phi + (M_PI_2)) / M_PI) * this->_diffuseTexture->height();
+
+        Bpixel& tex = (*this->_diffuseTexture)(texU, texV);
+        texColor[0] = tex.r;
+        texColor[1] = tex.g;
+        texColor[2] = tex.b;
+        texColor = texColor * COLOR_NORMALIZE;
+    }
+
+    return 1;
 }
 
 Color3d Sphere::textureDiffuse(const Point3d& P) const {
-	return Color3d(0.5,0.5,0.5);
+    return Color3d(0.5,0.5,0.5);
 }
 

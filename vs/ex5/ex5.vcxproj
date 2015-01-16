@@ -11,27 +11,41 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\ex4\ex4.cpp" />
-    <ClCompile Include="..\..\ex4\Model.cpp" />
-    <ClCompile Include="..\..\ex4\ShaderIO.cpp" />
+    <ClCompile Include="..\..\ex5new\bimage.cpp" />
+    <ClCompile Include="..\..\ex5new\camera.cpp" />
+    <ClCompile Include="..\..\ex5new\ex5.cpp" />
+    <ClCompile Include="..\..\ex5new\MyMeshObject.cpp" />
+    <ClCompile Include="..\..\ex5new\object.cpp" />
+    <ClCompile Include="..\..\ex5new\polygon.cpp" />
+    <ClCompile Include="..\..\ex5new\scene.cpp" />
+    <ClCompile Include="..\..\ex5new\sphere.cpp" />
+    <ClCompile Include="..\..\ex5new\triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ex4\Model.h" />
-    <ClInclude Include="..\..\ex4\ShaderIO.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\ex4\shaders\Arcball.vert" />
-    <None Include="..\..\ex4\shaders\GouraudShader.vert" />
-    <None Include="..\..\ex4\shaders\Phong.frag" />
-    <None Include="..\..\ex4\shaders\Phong.vert" />
-    <None Include="..\..\ex4\shaders\SimpleShader.frag" />
-    <None Include="..\..\ex4\shaders\SimpleShader.vert" />
+    <ClInclude Include="..\..\ex5new\bimage.h" />
+    <ClInclude Include="..\..\ex5new\camera.h" />
+    <ClInclude Include="..\..\ex5new\general.h" />
+    <ClInclude Include="..\..\ex5new\lights.h" />
+    <ClInclude Include="..\..\ex5new\MyMesh.h" />
+    <ClInclude Include="..\..\ex5new\MyMeshObject.h" />
+    <ClInclude Include="..\..\ex5new\MyVecs.h" />
+    <ClInclude Include="..\..\ex5new\object.h" />
+    <ClInclude Include="..\..\ex5new\polygon.h" />
+    <ClInclude Include="..\..\ex5new\ray.h" />
+    <ClInclude Include="..\..\ex5new\scene.h" />
+    <ClInclude Include="..\..\ex5new\Scene1.h" />
+    <ClInclude Include="..\..\ex5new\Scene2.h" />
+    <ClInclude Include="..\..\ex5new\Scene3.h" />
+    <ClInclude Include="..\..\ex5new\Scene4.h" />
+    <ClInclude Include="..\..\ex5new\Scene5.h" />
+    <ClInclude Include="..\..\ex5new\SceneChooser.h" />
+    <ClInclude Include="..\..\ex5new\sphere.h" />
+    <ClInclude Include="..\..\ex5new\triangle.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6E68FB85-B60F-4839-AE6B-E28C02B5FCBD}</ProjectGuid>
+    <ProjectGuid>{37BA5172-3614-4F0A-815C-7DB29BB4DC28}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>ex1</RootNamespace>
-    <ProjectName>ex4</ProjectName>
+    <RootNamespace>ex5</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -69,18 +83,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_USE_MATH_DEFINES;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_USE_MATH_DEFINES;ORI;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\lib\include;C:\Program Files %28x86%29\OpenMesh 3.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\lib\lib;C:\Program Files %28x86%29\OpenMesh 3.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32d.lib;OpenMeshCored.lib;bimage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32d.lib;OpenMeshCored.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /y C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\ex\graphics\$(ProjectName)\shaders $(OutDir)\shaders</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -90,7 +101,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_USE_MATH_DEFINES;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_USE_MATH_DEFINES;ORI;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\lib\include;C:\Program Files %28x86%29\OpenMesh 3.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -99,11 +110,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\lib\lib;C:\Program Files %28x86%29\OpenMesh 3.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glew32d.lib;OpenMeshCored.lib;bimage.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32d.lib;OpenMeshCored.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /y C:\Users\Ori\Downloads\University\YearC\SemesterA\Graphics\ex\graphics\$(ProjectName)\shaders $(OutDir)\shaders</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

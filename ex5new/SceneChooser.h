@@ -8,7 +8,7 @@
 #ifndef cg_projects_SceneChooser_h
 #define cg_projects_SceneChooser_h
 
-#define WITHOUT_TEXTURES 1
+#define WITHOUT_TEXTURES 0
 
 // TODO: Change to add more scenes
 #define MAX_SCENE_INDEX 7

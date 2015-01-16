@@ -2,7 +2,9 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
+#ifndef WIN32
 #include <unistd.h>
+#endif // !WIN32
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -406,12 +408,15 @@ void BImage::show() {
   
   writeImage(filename) ;
   
-  if(fork() == 0) {
-    if(fork() == 0)
-       execl("/usr/X11R6/bin/xv", "xv", filename, NULL) ;
-     else {
-      sleep(10);
-      execl("/bin/rm", "rm", filename, NULL) ;
-    }
-  }  
+#ifndef WIN32
+  if (fork() == 0) {
+	  if (fork() == 0)
+		  execl("/usr/X11R6/bin/xv", "xv", filename, NULL);
+	  else {
+		  sleep(10);
+		  execl("/bin/rm", "rm", filename, NULL);
+	  }
+  }
+
+#endif // !WIN32
 }

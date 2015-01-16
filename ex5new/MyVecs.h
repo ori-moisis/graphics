@@ -14,7 +14,7 @@
 //////////////////////////////
 
 // for some reason, in windows the file is located on a different location  //
-#ifdef WIN32
+#if defined WIN32 && !defined ORI
 #include <OpenMesh/Core/Math/VectorT.hh>
 #else
 #include <OpenMesh/Core/Geometry/VectorT.hh>
