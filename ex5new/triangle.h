@@ -11,6 +11,7 @@
 #ifndef _TRIANGLE_HH
 #define _TRIANGLE_HH
 
+#include <vector>
 
 //////////////////////////////
 // Project Includes         //
@@ -24,33 +25,34 @@
 // Class Decleration        //
 //////////////////////////////
 
-class Triangle 
+class Triangle
 {
 public:
-  // Constructor - create a triangle from the given points  //
-  Triangle(const Vector3d& normal, Point3d p0, Point3d p1, Point3d p2);
-  Triangle(const Vector3d& normal, Point3d p0, Point3d p1, Point3d p2, Point2d t0, Point2d t1, Point2d t2);
+    // Constructor - create a triangle from the given points  //
+    Triangle(const std::vector<Point3d>& points);
+    Triangle(const std::vector<Point3d>& points, const std::vector<Point2d>& texCoord);
 
+    // Destructor - get rid of a triangle //
+    ~Triangle();
 
-
-  // Destructor - get rid of a triangle //
-  ~Triangle();
-
-  // isInside - return true if the given point is inside the triangle //
-  bool isInside(IN const Point3d& p, OUT Point2d& texCoord) const;
+    // isInside - return true if the given point is inside the triangle //
+    bool isInside(IN const Point3d& p, OUT Point2d& texCoord) const;
 
 private:
 
-  Vector3d _normal; // Normal to the triangle
-  Point3d _p0;  // One of the triangle vertices   //
-  Point3d _p1;  // One of the triangle vertices   //
-  Point3d _p2;  // One of the triangle vertices   //
+    void calcCacheables();
 
-  Point2d _t0;  // The texture map coordiate of p0  //
-  Point2d _tu;  // The texture map coordinate of p1 //
-  Point2d _tv;  // The texture map coordinate of p2 //
+    std::vector<Point3d> _p;
+    std::vector<Point2d> _t;
 
-  bool  _textured;
+    bool  _textured;
+
+    Vector3d _ab;
+    Vector3d _ac;
+    double _abDotAb;
+    double _abDotAc;
+    double _acDotAc;
+    double _denom;
 
 };
 
