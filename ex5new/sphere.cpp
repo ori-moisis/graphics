@@ -47,20 +47,21 @@ int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
     N = P - this->_C;
     N.normalize();
 
-    // Make sure the normal is pointing in the right direction
-    if (OpenMesh::dot(N, ray.D()) > 0) {
-        N = -N;
-    }
-
     texColor = COLOR_WHITE;
     if (this->_diffuseTexture) {
+        // This is silly, but in order to make sure the texture seam is on the back
+        // of the sphere - flip the normal so the "z" coordinate is positive
+        if (N[2] < 0) {
+            N = -N;
+        }
+
         double theta = atan2(N[0], N[2]);
         double phi = atan2(N[1], sqrt(N[0]*N[0] + N[2]*N[2]));
 
-        double texU = CLAMP((theta + M_PI) / (2 * M_PI)) * this->_diffuseTexture->width();
+        double texU = CLAMP(1-(theta + M_PI) / (2*M_PI)) * this->_diffuseTexture->width();
         double texV = CLAMP((phi + M_PI_2) / M_PI) * this->_diffuseTexture->height();
 
-        Bpixel& tex = (*this->_diffuseTexture)(texU, texV);
+        const Bpixel tex = (*this->_diffuseTexture)(texU, texV);
         texColor[0] = tex.r;
         texColor[1] = tex.g;
         texColor[2] = tex.b;
