@@ -18,8 +18,6 @@ public:
 
   virtual int intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor) const;
 
-  Color3d textureDiffuse(const Point3d& P) const;
-
 private:
   glm::mat4 _T;
   glm::mat4 _invT;

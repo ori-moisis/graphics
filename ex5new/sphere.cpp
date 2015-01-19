@@ -71,7 +71,3 @@ int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
     return 1;
 }
 
-Color3d Sphere::textureDiffuse(const Point3d& P) const {
-    return Color3d(0.5,0.5,0.5);
-}
-

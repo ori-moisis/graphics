@@ -42,7 +42,3 @@ int Ellipsoid::intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d
 
 	return result;
 }
-
-Color3d Ellipsoid::textureDiffuse(const Point3d& P) const {
-	return Color3d(0.0f);
-}
