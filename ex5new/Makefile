@@ -22,6 +22,7 @@ EXEC =
 SRCS	= bimage.cpp       \
           object.cpp       \
           sphere.cpp       \
+          ellipsoid.cpp    \
           camera.cpp       \
           scene.cpp        \
           polygon.cpp      \
