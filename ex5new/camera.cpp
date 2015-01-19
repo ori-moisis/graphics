@@ -37,7 +37,7 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
     double fov_v = this->_fov_h * img.width() / img.height();
 
     for (int i = row_start; i < row_start + number_of_rows; ++i) {
-        std::cout << "starting row " << i << std::endl;
+        if (DO_PRINTS) std::cout << "starting row " << i << std::endl;
         for (int j = 0; j < img.width(); ++j) {
             Color3d color = COLOR_BLACK;
 

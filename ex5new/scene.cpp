@@ -150,16 +150,9 @@ Vector3d randVector(double length) {
 }
 
 Ray Scene::perturbateRay(const Ray& r) const {
-    double rayTheta = atan2(r.D()[1], r.D()[0]);
-    double rayPhi = acos(r.D()[2]);	// r=1, so z/r == z
-    double randTheta = rayTheta + randAngle(this->_cutoffAngle);
-    double randPhi = rayPhi + randAngle(this->_cutoffAngle);
-    double x = cos(randTheta) * sin(randPhi);
-    double y = sin(randTheta) * sin(randPhi);
-    double z = cos(randPhi);
-    Vector3d D = Vector3d(x, y, z);
-    Ray randomRay = Ray(r.O(), D);
-    return randomRay;
+    double randLen = this->_cutoffAngle / 45.0;
+    Vector3d D = r.D() + randVector(randLen);
+    return Ray(r.O(), D);
 }
 
 bool Scene::findNearestObject(Ray ray, Object** object, double& t, Point3d& P,
