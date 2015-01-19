@@ -62,8 +62,9 @@ struct Scene3 : public Scene
 		scene.backgroundColor() = (blue +  white) * 0.5;
 		
 		MyMesh mesh;
+		OpenMesh::IO::Options opts(OpenMesh::IO::Options::VertexTexCoord);
 		mesh.request_vertex_texcoords2D();
-		if ( ! OpenMesh::IO::read_mesh(mesh, "meshes/girl_face.obj"))
+		if ( ! OpenMesh::IO::read_mesh(mesh, "meshes/girl_face.obj", opts))
 		{
 			fprintf(stderr, "Error: cannot read mesh from file\n");
 			exit(-1);

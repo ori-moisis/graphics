@@ -36,11 +36,8 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
 
     double fov_v = this->_fov_h * img.width() / img.height();
 
-    // TODO: if something stops working - the fact that colDir and rowDir are opposite
-    //       might be the reason...
-
     for (int i = row_start; i < row_start + number_of_rows; ++i) {
-
+        std::cout << "starting row " << i << std::endl;
         for (int j = 0; j < img.width(); ++j) {
             Color3d color = COLOR_BLACK;
 
@@ -53,10 +50,10 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
                     colOffset = (double)rand() / RAND_MAX;
                 }
 
-                double rowDir = (rowOffset + i - img.height()/2) * tan(fov_v) * 2 / img.height();
-                double colDir = (img.width()/2 - colOffset - j) * tan(this->_fov_h) * 2 / img.width();
+                double rowDir = (img.height() / 2 - rowOffset - i) * tan(fov_v) * 2 / img.height();
+                double colDir = (colOffset + j - img.width() / 2) * tan(this->_fov_h) * 2 / img.width();
 
-                glm::vec4 dir(rowDir, colDir, -1, 0);
+                glm::vec4 dir(colDir, rowDir, -1, 0);
                 dir = this->_transform * dir;
 
                 Ray r (this->_position, Vector3d(dir.x, dir.y, dir.z));
@@ -69,7 +66,7 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
 
             color = color / this->_samples_per_pixel;
 
-            img(i, j) = Bpixel(color[0] * 255, color[1] * 255, color[2]* 255);
+            img(j, i) = Bpixel(color[0] * 255, color[1] * 255, color[2]* 255);
         }
     }
 }

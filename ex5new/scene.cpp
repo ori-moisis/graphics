@@ -58,12 +58,15 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
         if (DO_PRINTS) std::cout << "hit object " << *(int*)&obj << " at point " << intersectionPoint << std::endl;
         outColor = COLOR_BLACK;
 
-        vis = vis/2;
-
         // Fix normal direction to be opposite the incoming ray
         if (OpenMesh::dot(intersectionNormal, ray.D()) > 0) {
             intersectionNormal = -intersectionNormal;
         }
+
+        // New visability is the max component of reflect / refract (maximum 0.5 so we don't recurse forever)
+        double visFactor = std::max(std::max(obj->getTransparency()[0], obj->getTransparency()[1]), obj->getTransparency()[2]);
+        visFactor = std::max(std::max(std::max(visFactor, obj->getReflection()[0]), obj->getReflection()[1]), obj->getReflection()[2]);
+        vis = vis * std::min(0.5, visFactor);
 
         // Reflect
         bool haveReflect = obj->getReflection() != COLOR_BLACK;

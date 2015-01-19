@@ -23,6 +23,15 @@ MyMeshObject::~MyMeshObject() {
 }
 
 void MyMeshObject::set_texture_map(BImage* image) {
+    for (MyMesh::FaceIter iter = _mesh.faces_begin();
+        iter != _mesh.faces_end();
+        ++iter)
+    {
+        Polygon* poly = _mesh.property(this->_fp_polygon_handle, iter);
+        if (poly) {
+            poly->set_texture_map(image);
+        }
+    }
 }
 
 int MyMeshObject::intersect(Ray& ray, double tMax, double& t, Point3d& P,
@@ -32,19 +41,25 @@ int MyMeshObject::intersect(Ray& ray, double tMax, double& t, Point3d& P,
     Vector3d tmpN;
     Color3d tmpColor;
 
+    bool found = false;
     if (this->_boundingSphere->intersect(ray, tMax, tmpT, tmpP, tmpN, tmpColor)) {
+        tmpT = tMax;
         for (MyMesh::FaceIter iter = _mesh.faces_begin();
              iter != _mesh.faces_end();
              ++iter) {
             Polygon* poly = _mesh.property(this->_fp_polygon_handle, iter);
-            if (poly->intersect(ray, tMax, tmpT, tmpP, tmpN, tmpColor)) {
-                t = tmpT;
-                P = tmpP;
-                N = tmpN;
-                texColor = tmpColor;
-                return INTERSECTION;
+            if (poly->intersect(ray, tmpT, tmpT, tmpP, tmpN, tmpColor)) {
+                found = true;
             }
         }
+    }
+
+    if (found) {
+        t = tmpT;
+        P = tmpP;
+        N = tmpN;
+        texColor = tmpColor;
+        return INTERSECTION;
     }
 
     return NO_INTERSECTION;
@@ -75,6 +90,8 @@ void MyMeshObject::calculateBoundingSphere() {
     // Create a polygon for each face
     _mesh.add_property(this->_fp_polygon_handle);
 
+    bool textured = _mesh.has_vertex_texcoords2D();
+
     for (MyMesh::FaceIter iter = _mesh.faces_begin();
          iter != _mesh.faces_end();
          ++iter)
@@ -82,12 +99,23 @@ void MyMeshObject::calculateBoundingSphere() {
         MyMesh::Normal norm = _mesh.calc_face_normal(*iter);
 
         std::vector<Point3d> points;
+        std::vector<Point2d> texPoints;
+
         MyMesh::FaceVertexIter end_iter = _mesh.fv_end(*iter);
         for (MyMesh::FaceVertexIter v_iter = _mesh.fv_begin(*iter); v_iter != end_iter; ++v_iter)
         {
             points.push_back(_mesh.point(v_iter.handle()));
+            if (textured) {
+                texPoints.push_back(_mesh.texcoord2D(v_iter.handle()));
+            }
         }
 
-        _mesh.property(this->_fp_polygon_handle, iter) = new Polygon(points, norm);
+        Polygon* poly = NULL;
+        if (textured) {
+            poly = new Polygon(points, texPoints, norm);
+        } else {
+            poly = new Polygon(points, norm);
+        }
+        _mesh.property(this->_fp_polygon_handle, iter) = poly;
     }
 }
