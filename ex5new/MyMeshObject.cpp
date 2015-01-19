@@ -12,8 +12,9 @@ MyMeshObject::~MyMeshObject() {
         delete this->_boundingSphere;
         this->_boundingSphere = NULL;
 
+        MyMesh::FaceIter end_iter = _mesh.faces_end();
         for (MyMesh::FaceIter iter = _mesh.faces_begin();
-             iter != _mesh.faces_end();
+             iter != end_iter;
              ++iter)
         {
             delete _mesh.property(this->_fp_polygon_handle, iter);
@@ -23,8 +24,9 @@ MyMeshObject::~MyMeshObject() {
 }
 
 void MyMeshObject::set_texture_map(BImage* image) {
+    MyMesh::FaceIter end_iter = _mesh.faces_end();
     for (MyMesh::FaceIter iter = _mesh.faces_begin();
-        iter != _mesh.faces_end();
+        iter != end_iter;
         ++iter)
     {
         Polygon* poly = _mesh.property(this->_fp_polygon_handle, iter);
@@ -44,8 +46,9 @@ int MyMeshObject::intersect(Ray& ray, double tMax, double& t, Point3d& P,
     bool found = false;
     if (this->_boundingSphere->intersect(ray, tMax, tmpT, tmpP, tmpN, tmpColor)) {
         tmpT = tMax;
+        MyMesh::FaceIter end_iter = _mesh.faces_end();
         for (MyMesh::FaceIter iter = _mesh.faces_begin();
-             iter != _mesh.faces_end();
+             iter != end_iter;
              ++iter) {
             Polygon* poly = _mesh.property(this->_fp_polygon_handle, iter);
             if (poly->intersect(ray, tmpT, tmpT, tmpP, tmpN, tmpColor)) {
@@ -92,8 +95,9 @@ void MyMeshObject::calculateBoundingSphere() {
 
     bool textured = _mesh.has_vertex_texcoords2D();
 
+    MyMesh::FaceIter end_iter = _mesh.faces_end();
     for (MyMesh::FaceIter iter = _mesh.faces_begin();
-         iter != _mesh.faces_end();
+         iter != end_iter;
          ++iter)
     {
         MyMesh::Normal norm = _mesh.calc_face_normal(*iter);

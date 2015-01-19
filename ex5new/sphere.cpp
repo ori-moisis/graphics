@@ -59,9 +59,9 @@ int Sphere::intersect(Ray& ray, double tMax, double& t, Point3d& P,
         double phi = atan2(N[1], sqrt(N[0]*N[0] + N[2]*N[2]));
 
         double texU = CLAMP(1-(theta + M_PI) / (2*M_PI)) * this->_diffuseTexture->width();
-        double texV = CLAMP((phi + M_PI_2) / M_PI) * this->_diffuseTexture->height();
+        double texV = CLAMP(1-(phi + M_PI_2) / M_PI) * this->_diffuseTexture->height();
 
-        const Bpixel tex = (*this->_diffuseTexture)(texU, texV);
+        Bpixel tex = (*this->_diffuseTexture)(texU, texV);
         texColor[0] = tex.r;
         texColor[1] = tex.g;
         texColor[2] = tex.b;
