@@ -23,6 +23,7 @@ SRCS	= bimage.cpp       \
           object.cpp       \
           sphere.cpp       \
           ellipsoid.cpp    \
+          cone.cpp         \
           camera.cpp       \
           scene.cpp        \
           polygon.cpp      \

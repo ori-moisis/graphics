@@ -32,6 +32,8 @@
 #include "ray.h"
 #include "lights.h"
 #include "sphere.h"
+#include "ellipsoid.h"
+#include "cone.h"
 
 
 //////////////////////////////
