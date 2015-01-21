@@ -115,7 +115,7 @@ void Polygon::triangulate() {
 
 Vector3d Polygon::calcNormal(const vector<Point3d>& vertices) {
     if (vertices.size() < 3) {
-        return Vector3d(0,0,0);
+        return Vector3d(0,0,1);
     }
 
     // Return the cross product of two vectors

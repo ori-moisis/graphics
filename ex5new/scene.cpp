@@ -2,19 +2,19 @@
 
 #include "sphere.h"
 
-static const int NUM_SHADOW_RAYS = 3;
-
 Scene::Scene()
 : _background (COLOR_BLACK)
-, _cutoffAngle (0)
-, _numberOfRefRays (1) {
+, _numberOfRefRays (1)
+, _numberOfShadowRays(NUM_SHADOW_RAYS_FACTOR)
+, _cutoffAngle (0) {
 }
 
 Scene::Scene(Color3d& color, AmbientLight& light, double cutoffAngle)
 : _ambientLight (light)
 , _background (color)
-, _cutoffAngle(cutoffAngle)
-, _numberOfRefRays(1) {
+, _numberOfRefRays(1)
+, _numberOfShadowRays(NUM_SHADOW_RAYS_FACTOR)
+, _cutoffAngle(cutoffAngle) {
 }
 
 
@@ -48,14 +48,13 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
     double t;
     Point3d intersectionPoint;
     Vector3d intersectionNormal;
-    Color3d texColor(this->_background);
+    Color3d texColor(COLOR_WHITE);
     Color3d outColor(this->_background);
-    if (vis < 0.005) {
+    if (vis < MINIMAL_VIS) {
         return outColor;
     }
 
     if (this->findNearestObject(ray, &obj, t, intersectionPoint, intersectionNormal, texColor)) {
-        if (DO_PRINTS) std::cout << "hit object " << *(int*)&obj << " at point " << intersectionPoint << std::endl;
         outColor = COLOR_BLACK;
 
         // Fix normal direction to be opposite the incoming ray
@@ -66,19 +65,20 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
         // New visability is the max component of reflect / refract (maximum 0.5 so we don't recurse forever)
         double visFactor = std::max(std::max(obj->getTransparency()[0], obj->getTransparency()[1]), obj->getTransparency()[2]);
         visFactor = std::max(std::max(std::max(visFactor, obj->getReflection()[0]), obj->getReflection()[1]), obj->getReflection()[2]);
-        vis = vis * std::min(0.5, visFactor);
+        vis = vis * std::min(RECURSION_FACTOR, visFactor);
 
         // Reflect
+        Color3d lastReflectColor = COLOR_BLACK;
         bool haveReflect = obj->getReflection() != COLOR_BLACK;
         if (haveReflect) {
-            this->calcReflection(ray, intersectionPoint, intersectionNormal, vis, inObject);
-            outColor += obj->getReflection() * this->_lastReflection;
+            this->calcReflection(ray, intersectionPoint, intersectionNormal, vis, inObject, lastReflectColor);
+            outColor += obj->getReflection() * lastReflectColor;
         }
 
         // Refract
         if (obj->getTransparency() != COLOR_BLACK) {
             outColor += obj->getTransparency() *
-                    this->calcRefraction(ray, intersectionPoint, intersectionNormal, *obj, vis, inObject, haveReflect);
+                    this->calcRefraction(ray, intersectionPoint, intersectionNormal, *obj, vis, inObject, haveReflect, lastReflectColor);
         }
 
         for (vector<PointLight*>::const_iterator light_iter = this->_lights.begin();
@@ -99,7 +99,7 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
             }
         }
 
-        for (vector<Sphere*>::const_iterator light_iter = this->_sphereLights.begin();
+        for (vector<SphereLight*>::const_iterator light_iter = this->_sphereLights.begin();
              light_iter != this->_sphereLights.end();
              ++light_iter) {
 
@@ -127,7 +127,6 @@ Color3d Scene::trace_ray(Ray ray, double vis, bool inObject) const {
 }
 
 void Scene::add_object(Object* obj) {
-    if (DO_PRINTS) std::cout << "Adding object" << std::endl;
     this->_objects.push_back(obj);
 }
 
@@ -135,7 +134,7 @@ void Scene::add_light(PointLight* light) {
     this->_lights.push_back(light);
 }
 
-void Scene::add_sphere_light(Sphere* light) {
+void Scene::add_sphere_light(SphereLight* light) {
     this->_sphereLights.push_back(light);
 }
 
@@ -192,25 +191,25 @@ bool Scene::findNearestObject(Ray ray, Object** object, double& t, Point3d& P,
 }
 
 void Scene::calcReflection(const Ray& ray, const Point3d& P,
-        const Vector3d& N, double vis, bool inObject) const {
+        const Vector3d& N, double vis, bool inObject, Color3d& lastReflectColor) const {
 
     Ray reflectedRay(P, doReflect(ray.D(), N));
     Color3d reflectColor = COLOR_BLACK;
 
     if (this->_numberOfRefRays == 1) {
-        this->_lastReflection = this->trace_ray(reflectedRay, vis, inObject);
+        lastReflectColor = this->trace_ray(reflectedRay, vis, inObject);
     }
     else {
         for (int i = 0; i < this->_numberOfRefRays; ++i) {
             Ray randomRay = this->perturbateRay(reflectedRay);
             reflectColor += this->trace_ray(randomRay, vis, inObject);
         }
-        this->_lastReflection = reflectColor / this->_numberOfRefRays;
+        lastReflectColor = reflectColor / this->_numberOfRefRays;
     }
 }
 
 Color3d Scene::calcRefraction(const Ray& ray, const Point3d& P,
-        const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect) const {
+        const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect, Color3d& lastReflectColor) const {
 
     double index = inObject ? object.getIndex() : (1/object.getIndex());
     double c1 = -OpenMesh::dot(ray.D(), N);
@@ -232,13 +231,13 @@ Color3d Scene::calcRefraction(const Ray& ray, const Point3d& P,
         }
     } else {
         if (! haveReflect) {
-            this->calcReflection(ray, P, N, vis, inObject);
+            this->calcReflection(ray, P, N, vis, inObject, lastReflectColor);
         }
-        return this->_lastReflection;
+        return lastReflectColor;
     }
 }
 
-double Scene::calcShadowRatio(const Point3d& P, const Point3d& lightCenter, Sphere* lightObj) const {
+double Scene::calcShadowRatio(const Point3d& P, const Point3d& lightCenter, SphereLight* lightObj) const {
     double shadowRatio = 0;
 
     Object* shadowObj;
@@ -247,12 +246,12 @@ double Scene::calcShadowRatio(const Point3d& P, const Point3d& lightCenter, Sphe
     Color3d shadowColor;
     double shadowT;
     if (lightObj) {
-        for (int i = 0; i < NUM_SHADOW_RAYS; ++i) {
+        for (int i = 0; i < this->_numberOfShadowRays; ++i) {
             // Randomize a point on the light source
             Ray toLight(P, lightCenter + randVector(lightObj->_r) - P);
             if (this->findNearestObject(toLight, &shadowObj, shadowT, shadowP, shadowN, shadowColor, lightObj)) {
                 if (shadowObj != lightObj) {
-                    shadowRatio += 1 / NUM_SHADOW_RAYS;
+                    shadowRatio += 1 / this->_numberOfShadowRays;
                 }
             }
         }

@@ -69,9 +69,7 @@ int renderScene(size_t scene_index, size_t samplesPerPixel, size_t refRays, doub
 	}
 	
 	std::ostringstream filename;
-	//TODO: return the old line
-	//filename << "output_scene" << scene_index << ".bmp";
-	filename << "output_scene.bmp";
+	filename << "output_scene" << scene_index << ".bmp";
 	
 	img.save(filename.str().c_str());
 	

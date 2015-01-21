@@ -37,7 +37,6 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
     double fov_v = this->_fov_h * img.width() / img.height();
 
     for (int i = row_start; i < row_start + number_of_rows; ++i) {
-        if (DO_PRINTS) std::cout << "starting row " << i << std::endl;
         for (int j = 0; j < img.width(); ++j) {
             Color3d color = COLOR_BLACK;
 
@@ -57,7 +56,6 @@ void Camera::render(size_t row_start, size_t number_of_rows, BImage& img,
                 dir = this->_transform * dir;
 
                 Ray r (this->_position, Vector3d(dir.x, dir.y, dir.z));
-                if (DO_PRINTS) std::cout << "Tracing ray at pixel " << j << ',' << i << " sample #" << k << std::endl;
 
                 Color3d rayColor = scene.trace_ray(r);
 

@@ -17,7 +17,7 @@
 
 #include "general.h"
 #include "MyVecs.h"
-
+#include "sphere.h"
 
 //////////////////////////////
 // Class Decleration        //
@@ -43,5 +43,13 @@ public:
   Color3d _color;
 };
 
+class SphereLight : public Sphere
+{
+public:
+    SphereLight(const Point3d& position, double radius, const Color3d& color)
+    : Sphere(position, radius) {
+        this->specular() = color;
+    }
+};
 
 #endif

@@ -47,6 +47,7 @@ private:
 
     bool  _textured;
 
+    // Cached calculations
     Vector3d _ab;
     Vector3d _ac;
     double _abDotAb;

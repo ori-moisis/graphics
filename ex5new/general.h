@@ -29,9 +29,6 @@
 // Constants                //
 //////////////////////////////
 
-// TODO - remove this
-static const bool DO_PRINTS = false;
-
 // Vector3d,Point3d array index //
 static const int X      = 0;
 static const int Y      = 1;

@@ -1,14 +1,11 @@
 #include "ellipsoid.h"
 #define GLM_PRECISION_HIGHP_FLOAT
 
-Ellipsoid::Ellipsoid() : Sphere(), _T(1.0f), _invT(1.0f), _transT(1.0f) {
-}
-
-Ellipsoid::Ellipsoid(Point3d C, double r, glm::mat4 T)
-: Sphere(C, r),
-  _T(T),
-  _invT(glm::inverse(T)),
-  _transT(glm::transpose(_T)) {
+Ellipsoid::Ellipsoid(Point3d C, double r, const glm::mat4& T)
+: Sphere(C, r)
+,  _T(T)
+,  _invT(glm::inverse(T))
+,  _transT(glm::transpose(_T)) {
 }
 
 Ellipsoid::~Ellipsoid()
