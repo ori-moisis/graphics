@@ -66,12 +66,12 @@ struct Scene4 : public Scene
 		scene.backgroundColor() = (blue +  white) * 0.2;
 		
 		// background plane (mountains)
-		BImage * mounatains = new BImage("textures/mountains3.bmp");
+		BImage * mounatains = new BImage("textures/mountains2.bmp");
 		vector<Point3d> plane(4);
 		vector<Point2d> plane_uv(4);
-		double x = 20;
-		double y = 10;
-		double z = -10;
+		double x = 12;
+		double y = 12;
+		double z = -20;
 		plane[0] = Point3d(-x,y,z);
 		plane[1] = Point3d(x,y,z);
 		plane[2] = Point3d(x,-y,z);
@@ -86,7 +86,7 @@ struct Scene4 : public Scene
 		#if !WITHOUT_TEXTURES
 		poly->set_texture_map(mounatains);
 		#endif
-		//scene.add_object(poly);
+		scene.add_object(poly);
 
 		double mainZ = -6;
 		double mainX = -1.0;
