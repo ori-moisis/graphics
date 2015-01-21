@@ -48,7 +48,7 @@ class SphereLight : public Sphere
 public:
     SphereLight(const Point3d& position, double radius, const Color3d& color)
     : Sphere(position, radius) {
-        this->diffuse() = color;
+        this->specular() = color;
     }
 };
 
