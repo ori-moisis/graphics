@@ -28,6 +28,7 @@ private:
   double 	 _maxDist;
   double     _planeD;
   glm::vec3  _center;
+  double     _tant;
 };
 
 #endif /* _CONE_HH */

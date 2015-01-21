@@ -1,4 +1,5 @@
 #include "cone.h"
+#include "glm/gtx/rotate_vector.hpp"
 
 glm::vec3 toGlm(const Vector3d& v) {
 	return glm::vec3(v[0], v[1], v[2]);
@@ -19,6 +20,7 @@ Cone::Cone(Point3d V, double theta, Vector3d D, double(h)) : _theta((theta*M_PI)
 	_maxDist = _r / sin(_theta);
 	_planeD = glm::dot(_D, _V);
 	_center = _V - glm::vec3(_D.x*_h, _D.y*_h, _D.z*_h);
+	_tant = tan(_theta);
 }
 
 Cone::~Cone() {
@@ -30,27 +32,20 @@ static const double myEps = 1e-4;
 int Cone::intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P,
 					OUT Vector3d& N, OUT Color3d& texColor) const {
 
-	texColor = COLOR_WHITE;
 	glm::vec3 rayO(toGlm(ray.O()));
 	glm::vec3 rayD(toGlm(ray.D()));
 
-	// Check point on cap
-	//double capT;
-	Vector3d capP;
-	Vector3d capN;
 	bool hitCap = false;
 	bool hitCone = true;
 
+	// Check point on cap
+	Vector3d capP;
+	Vector3d capN;
 	double capT = -glm::dot(-_D, (rayO - _center)) / glm::dot(-_D, rayD);
-
 	glm::vec3 tmpP(toGlm(ray(capT)));
 	if (glm::distance(tmpP, _center) <= _r && capT < tMax && capT > myEps) {
 		capP = toOpenMesh(tmpP);
 		capN = toOpenMesh(-_D);
-		//std::cout << "HIT CAP" << std::endl;
-		//std::cout << "Normal is (" << capN[0] << ", " << capN[1] << ", " << capN[2] << ")"<< std::endl;
-		//std::cout << "AT POINT " << capP << std::endl;
-
 		hitCap = true;
 	}
 
@@ -84,8 +79,6 @@ int Cone::intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P,
 
 	tmpP = toGlm(ray(coneT));
 
-	//std::cout << "Cone P is " << toOpenMesh(tmpP) << std::endl;
-
 	// Take only lower side of the cone
 	if (glm::dot(_D, tmpP) > _planeD) {
 		hitCone = false;
@@ -97,7 +90,6 @@ int Cone::intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P,
 	{
 		hitCone = false;
 	}
-
 
 	if ((hitCone && hitCap && capT < coneT) || (hitCap && !hitCone)) {
 		N = capN; P = capP; t = capT;
@@ -113,20 +105,11 @@ int Cone::intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P,
 	P = toOpenMesh(tmpP);
 
 	// Calculate normal
-	double tant = tan(_theta);
 	Vector3d U(tmpP.x - _V.x, 0, tmpP.z - _V.z);
 	U.normalize();
-	N = Vector3d(U[0]/tant, tant, U[2]/tant);
-//
-//	glm::vec3 NG(2*P[0], 2*P[1], -2*P[2]);
-//	glm::rota
-//	NG = NG - _V;
-//	N = toOpenMesh(NG);
-
+    N = Vector3d(U[0]/_tant, _tant, U[2]/_tant);
 	N.normalize();
 
-	std::cout << "t is " << t << std::endl;
-	std::cout << "Normal is (" << N[0] << ", " << N[1] << ", " << N[2] << ")"<< std::endl;
 	return INTERSECTION;
 }
 
