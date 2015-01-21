@@ -8,11 +8,8 @@
 class Ellipsoid : public Sphere
 {
 public:
-  // Constructor - create a default ellipsoid  //
-  Ellipsoid();
-
   // Constructor - create an ellipsoid with the given parameters  //
-  Ellipsoid(Point3d C, double r, glm::mat4 T);
+  Ellipsoid(Point3d C, double r, const glm::mat4& T);
 
   virtual ~Ellipsoid();
 

@@ -23,12 +23,6 @@
 //////////////////////////////
 // Class Decleration        //
 //////////////////////////////
-
-static const Vector3d Vn = Vector3d(0.0,1.0,0.0);
-static const Vector3d Ve = Vector3d(0.0,0.0,1.0);
-static const Vector3d crossVnVe = cross(Vn, Ve);
-
-
 class Sphere : public Object 
 {
 public:

@@ -42,6 +42,7 @@
 
 static const double MINIMAL_VIS       = 0.1;
 static const double RECURSION_FACTOR  = 0.70;
+static const int NUM_SHADOW_RAYS_FACTOR = 3;
 
 //////////////////////////////
 // Class Decleration        //
@@ -68,7 +69,7 @@ public:
   void add_light(PointLight * light);
 
   // add_sphere_light - add a light source in the shape of a sphere
-  void add_sphere_light(Sphere* light);
+  void add_sphere_light(SphereLight* light);
 
   // backgroundColor - return reference to the background color
   Color3d & backgroundColor() {return _background;}
@@ -87,6 +88,7 @@ public:
   void setNumberOfRefRays(size_t n)
 	{
 		_numberOfRefRays = n;
+		_numberOfShadowRays = n * NUM_SHADOW_RAYS_FACTOR;
 	}
 	
   virtual void setDefaultCamera(Camera& camer) const = 0;
@@ -100,27 +102,25 @@ private:
   bool findNearestObject(IN Ray ray, OUT Object** object, OUT double& t, OUT Point3d& P, OUT Vector3d& N, OUT Color3d& texColor, Object* additionalObject = NULL) const;
 
   // calculate the reflection color at the given intersection point
-  void calcReflection(const Ray& ray, const Point3d& P, const Vector3d& N, double vis, bool inObject) const;
+  void calcReflection(const Ray& ray, const Point3d& P, const Vector3d& N, double vis, bool inObject, Color3d& lastReflectColor) const;
 
   // calculate the refraction color at the given intersection point
-  Color3d calcRefraction(const Ray& ray, const Point3d& P, const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect) const;
+  Color3d calcRefraction(const Ray& ray, const Point3d& P, const Vector3d& N, const Object& object, double vis, bool inObject, bool haveReflect, Color3d& lastReflectColor) const;
 
-  double calcShadowRatio(const Point3d& P, const Point3d& lightCenter, Sphere* lightObj = NULL) const;
+  double calcShadowRatio(const Point3d& P, const Point3d& lightCenter, SphereLight* lightObj = NULL) const;
 
 private:
   
   vector<Object*>        _objects;       // The scene's objects          //
   vector<PointLight*>    _lights;        // The scene's point lights     //
-  vector<Sphere*>        _sphereLights;  // Sphere lights                //
+  vector<SphereLight*>   _sphereLights;  // Sphere lights                //
 
   AmbientLight            _ambientLight;  // The scene's Ambient light    //
   Color3d                 _background ;   // The scene's background color //
-  mutable Color3d         _lastReflection;
-
+  double                  _numberOfRefRays;
+  int                     _numberOfShadowRays;
+  double                  _cutoffAngle;
   
-
-  double _cutoffAngle;
-  double _numberOfRefRays;
 };
 
 #endif /* _SCENE_HH */
