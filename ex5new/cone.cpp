@@ -27,11 +27,12 @@ Cone::~Cone() {
 }
 
 
-static const double myEps = 1e-4;
+static const double myEps = 1e-4; // Smaller eps doesn't prevent re-hitting same point
 
 int Cone::intersect(IN Ray& ray, IN double tMax, OUT double& t, OUT Point3d& P,
 					OUT Vector3d& N, OUT Color3d& texColor) const {
 
+	texColor = COLOR_WHITE;
 	glm::vec3 rayO(toGlm(ray.O()));
 	glm::vec3 rayD(toGlm(ray.D()));
 
