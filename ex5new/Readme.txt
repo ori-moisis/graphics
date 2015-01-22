@@ -36,7 +36,8 @@ triangle.cpp           - A triangle - polygons use the triangle in order to dete
                          an intersection with a ray occurs 
 triangle.h             - A triangle
 Makefile			   - Compiles the program
-textures/			   - Textures for scenes
+textures/			   - Textures folder
+meshes/			       - Meshes folder
 Readme.txt             - This file
 
 
