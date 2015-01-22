@@ -32,17 +32,11 @@ struct Scene4 : public Scene
 		PointLight* p3 = new PointLight(pos3, color3);
 		scene.add_light(p3);
 
-		//		Point3d pos1(0,-10,-4);
-//		Color3d color1(1,1,1);
-//		PointLight  * p1 = new PointLight(pos1,color1);
-		//scene.add_light(p1);
-
 		scene.ambientLight()._color = COLOR_BLACK;
 	}
 	
 	void defineGeometry()
 	{
-
 		double radius;
 		double angle;
 		Point3d center;
@@ -51,10 +45,7 @@ struct Scene4 : public Scene
 		double height;
 
 		Scene& scene = *this;
-#if !WITHOUT_TEXTURES
-		BImage * b = new BImage("textures/checkerboard_lg.bmp");
-		BImage * w = new BImage("textures/warning.bmp");
-#endif
+
 		/* define some colors */
 		Color3d white(1.0);
 		Color3d black(0.0);
@@ -63,10 +54,10 @@ struct Scene4 : public Scene
 		Color3d blue(0.0,0.0,1.0);
 		Color3d iron( 0.30, 0.30, 0.30);
 		Color3d brown(0.4, 0.33, 0.2);
-		scene.backgroundColor() = (blue +  white) * 0.2;
+		scene.backgroundColor() = white; //(blue +  white) * 0.2;
 		
 		// background plane (mountains)
-		BImage * mounatains = new BImage("textures/mountains2.bmp");
+		BImage * mounatains = new BImage("textures/mountains.bmp");
 		vector<Point3d> plane(4);
 		vector<Point2d> plane_uv(4);
 		double x = 12;
@@ -82,7 +73,6 @@ struct Scene4 : public Scene
 		plane_uv[3] = Point2d(1,1);
 		Polygon * poly = new Polygon(plane,plane_uv);
 		poly->diffuse() = white;
-		//poly->reflection() = (blue + red) * 0.5 + white * 0.5;
 		#if !WITHOUT_TEXTURES
 		poly->set_texture_map(mounatains);
 		#endif
@@ -100,11 +90,15 @@ struct Scene4 : public Scene
 					  0.0, 0.0, 1.0, 0.0,
 					  0.0, 0.0, 0.0, 1.0);
 
+		BImage* coat = new BImage("textures/coat.bmp");
 		Ellipsoid * body = new Ellipsoid(center, radius, T);
-		body->diffuse() = red * 0.7;
-		body->specular() = white * 0.3;
+		body->diffuse() = white; //red * 0.7;
+		body->specular() = white;
 		body->reflection() = white*0.2;
 		body->shining() = 20;
+		#if !WITHOUT_TEXTURES
+		body->set_texture_map(coat);
+		#endif
 		scene.add_object(body);
 
 		// Left leg
@@ -178,8 +172,6 @@ struct Scene4 : public Scene
 					  0.0, 0.0, 0.0, 1.0);
 		Ellipsoid* mouth = new Ellipsoid(center, radius, T);
 		mouth->diffuse() = black;
-		//mouth->shining() = 20;
-		//mouth->transparency() = white * 0.2;
 		scene.add_object(mouth);
 
 		// Hat
@@ -189,7 +181,6 @@ struct Scene4 : public Scene
 		axis = Vector3d(-0.01f, 1.0f, -0.05f);
 		Cone* hat = new Cone(center, angle, axis, height);
 		hat->diffuse() = red * 0.7;
-		//hat->reflection() = white*0.2;
 		hat->specular() = white * 0.2;
 		hat->shining() = 10;
 		scene.add_object(hat);
@@ -200,16 +191,7 @@ struct Scene4 : public Scene
 		Sphere * pompom = new Sphere(center, radius);
 		pompom->diffuse() = white;
 		pompom->shining() = 20;
-		//pompom ->transparency() = white * 0.2;
 		scene.add_object(pompom);
-
-		// Beard
-		center = Point3d(mainX,1.1,mainZ+0.7);
-		radius = 0.3;
-		T = glm::mat4(1.0, 0.0, 0.0, 0.0,
-					  0.0, 1.6, 0.0, 0.0,
-					  0.0, 0.0, 1.2, 0.0,
-					  0.0, 0.0, 0.0, 1.0);
 
 		// Nose
 		center = Point3d(mainX-0.12,mainY+1.8,mainZ + 2.0);
@@ -235,11 +217,11 @@ struct Scene4 : public Scene
 
 		stump = new Cone(Point3d(mainX+5,1.3,mainZ-7), 19, axis, 6);
 		stump->diffuse() = brown*0.85;
-		stump->reflection() = white*0.4;
+		stump->reflection() = white*0.2;
 		scene.add_object(stump);
 		top = new Cone(Point3d(mainX+5,5.1,mainZ-7), 25, axis, 4.2);
 		top->diffuse() = green * 0.4;
-		top->reflection() = white*0.8;
+		top->reflection() = white*0.3;
 		scene.add_object(top);
 
 		stump = new Cone(Point3d(mainX+5,0.2,mainZ-3), 17, axis, 4);
@@ -249,23 +231,6 @@ struct Scene4 : public Scene
 		top->diffuse() = green * 0.3;
 		top->reflection() = white*0.3;
 		scene.add_object(top);
-
-		// Snow balls
-//		radius = 0.1;
-//		Sphere * ball = new Sphere(Point3d(mainX+4.0,4.5,mainZ-6.5), radius);
-//		ball->diffuse() = white;
-//		ball->shining() = 100;
-//		scene.add_object(ball);
-//
-//		ball = new Sphere(Point3d(mainX+4.2,4.2,mainZ-6.2), radius);
-//		ball->diffuse() = white;
-//		ball->shining() = 100;
-//		scene.add_object(ball);
-//
-//		ball = new Sphere(Point3d(mainX+4.2,3.8,mainZ-6.0), radius);
-//		ball->diffuse() = white;
-//		ball->shining() = 100;
-//		scene.add_object(ball);
 
 		// Lens
 		center = Point3d(mainX+1.0,-0.3,-3);
@@ -283,7 +248,7 @@ struct Scene4 : public Scene
 		scene.add_object(lens);
 
 		// Floor
-		BImage * snow = new BImage("textures/snow2.bmp");
+		BImage * snow = new BImage("textures/snow.bmp");
 		vector<Point3d> plane2(4);
 		vector<Point2d> plane_uv2(4);
 		double xClose = 20;
@@ -317,6 +282,7 @@ struct Scene4 : public Scene
 		Vector3d up(0,1,0) ;
 		camera = Camera(pos,coi,up,fov_h);
 	}
+
 	virtual ~Scene4() {
 
 	}
